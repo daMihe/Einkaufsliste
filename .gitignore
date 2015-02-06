@@ -24,3 +24,7 @@ proguard/
 
 # Log Files
 *.log
+
+.directory
+.idea/dictionaries/michi.xml
+.idea/workspace.xml
