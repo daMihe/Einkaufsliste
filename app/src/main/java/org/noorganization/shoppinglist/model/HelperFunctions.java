@@ -13,7 +13,7 @@ class HelperFunctions {
      * Generates a unique id for an Identificable object.
      * @return A collision-free, random id
      */
-    static int generateId(List<Identificable> _ExistingObjects, int _InvalidId) {
+    static int generateId(Identificable _ExistingObjects[], int _InvalidId) {
         Random randomGenerator = new Random();
         randomGenerator.setSeed(SystemClock.uptimeMillis());
         while (true) {
