@@ -4,10 +4,7 @@ package org.noorganization.shoppinglist.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Unit implements Identificable {
-
-    public static final int INVALID_ID = 0xFFFFFFFF;
-
+public class Unit implements SaveableModelObject {
     private static List<Unit> m_sAllUnits;
 
     private int m_Id;
@@ -48,12 +45,13 @@ public class Unit implements Identificable {
 
         Unit newUnit = new Unit();
         newUnit.m_UnitText = _UnitText;
-        newUnit.m_Id = HelperFunctions.generateId(m_sAllUnits.toArray(new Identificable[m_sAllUnits.size()]), INVALID_ID);
+        newUnit.m_Id = HelperFunctions.generateId(m_sAllUnits.toArray(new SaveableModelObject[m_sAllUnits.size()]), INVALID_ID);
         m_sAllUnits.add(newUnit);
 
         return newUnit;
     }
 
+    @Override
     public int getId() {
         return m_Id;
     }
@@ -62,6 +60,7 @@ public class Unit implements Identificable {
         return m_UnitText;
     }
 
+    @Override
     public void invalidate() {
         m_Id = INVALID_ID;
     }

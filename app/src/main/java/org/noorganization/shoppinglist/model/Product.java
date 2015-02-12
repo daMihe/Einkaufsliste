@@ -6,9 +6,7 @@ import java.util.List;
 /**
  * Created by michi on 31.01.15.
  */
-public class Product implements Identificable {
-    public static final int INVALID_ID = 0xFFFFFFFF;
-
+public class Product implements SaveableModelObject {
     private static List<Product> m_AllProducts;
 
     private int m_Id;
@@ -50,6 +48,11 @@ public class Product implements Identificable {
     @Override
     public int getId() {
         return m_Id;
+    }
+
+    @Override
+    public void invalidate() {
+        m_Id = INVALID_ID;
     }
 
     public int getUnitId() {

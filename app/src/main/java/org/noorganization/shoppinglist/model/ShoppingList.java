@@ -7,9 +7,7 @@ import java.util.List;
 /**
  * Created by michi on 11.02.15.
  */
-public class ShoppingList implements Identificable {
-
-    public static final int INVALID_ID = 0xFFFFFFFF;
+public class ShoppingList implements SaveableModelObject {
 
     private static List<ShoppingList> m_sAllLists;
 
@@ -46,6 +44,11 @@ public class ShoppingList implements Identificable {
     @Override
     public int getId() {
         return m_Id;
+    }
+
+    @Override
+    public void invalidate() {
+        m_Id = INVALID_ID;
     }
 
     public String getTitle() {

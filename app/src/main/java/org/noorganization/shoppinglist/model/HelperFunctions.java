@@ -2,7 +2,6 @@ package org.noorganization.shoppinglist.model;
 
 import android.os.SystemClock;
 
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -10,10 +9,10 @@ import java.util.Random;
  */
 class HelperFunctions {
     /**
-     * Generates a unique id for an Identificable object.
+     * Generates a unique id for an SaveableModelObject object.
      * @return A collision-free, random id
      */
-    static int generateId(Identificable _ExistingObjects[], int _InvalidId) {
+    static int generateId(SaveableModelObject _ExistingObjects[], int _InvalidId) {
         Random randomGenerator = new Random();
         randomGenerator.setSeed(SystemClock.uptimeMillis());
         while (true) {
@@ -22,7 +21,7 @@ class HelperFunctions {
                 continue;
             }
             boolean unique = true;
-            for (Identificable currentObject : _ExistingObjects) {
+            for (SaveableModelObject currentObject : _ExistingObjects) {
                 if (currentObject.getId() == newId) {
                     unique = false;
                     break;
