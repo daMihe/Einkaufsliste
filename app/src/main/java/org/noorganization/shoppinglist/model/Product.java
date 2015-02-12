@@ -6,8 +6,7 @@ import java.util.List;
 /**
  * Created by michi on 31.01.15.
  */
-public class Product implements SaveableModelObject {
-    private static List<Product> m_AllProducts;
+public class Product extends SaveableModelObject {
 
     private int m_Id;
     private String m_Title;
@@ -17,37 +16,17 @@ public class Product implements SaveableModelObject {
     private static final String ASSERT_ERROR_TITLE_NULL = "Product without Title is not allowed.";
     private static final String ERROR_UNIT_NOT_FOUND = "The Unit-id could not be resolved: %08x";
 
-    private Product() {
-    }
-
-    /**
-     * Creates a new Product and registers it.
-     * @param _Title A name for the Product. null is not allowed (asserted).
-     * @param _DefaultValue
-     * @param _UnitId The id of the referencing Unit returned by {@link Unit#getId()}. {@link Unit#INVALID_ID} is also
-     *                allowed and means something like "this product should have no unit".
-     * @return The created Product.
-     */
-    public static Product Create(String _Title, float _DefaultValue, int _UnitId) {
-        assert (_Title != null) : ASSERT_ERROR_TITLE_NULL;
-
-        if (m_AllProducts == null) {
-            m_AllProducts = new ArrayList<Product>();
-        }
-
-        Product newProduct = new Product();
-        newProduct.m_Title = _Title;
-        newProduct.m_DefaultValue = _DefaultValue;
-        newProduct.m_UnitId = _UnitId;
-        newProduct.m_Id = HelperFunctions.generateId(m_AllProducts.toArray(new Product[m_AllProducts.size()]), INVALID_ID);
-        m_AllProducts.add(newProduct);
-
-        return newProduct;
+    Product() {
     }
 
     @Override
     public int getId() {
         return m_Id;
+    }
+
+    @Override
+    void setId(int _newId) {
+        m_Id = _newId;
     }
 
     @Override
