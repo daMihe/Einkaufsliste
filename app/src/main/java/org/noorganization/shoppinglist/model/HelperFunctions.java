@@ -9,10 +9,10 @@ import java.util.Random;
  */
 class HelperFunctions {
     /**
-     * Generates a unique id for an SaveableModelObject object.
+     * Generates a unique id for an IdentificableModelObject object.
      * @return A collision-free, random id
      */
-    static int generateId(SaveableModelObject _ExistingObjects[], int _InvalidId) {
+    static int generateId(IdentificableModelObject _ExistingObjects[], int _InvalidId) {
         Random randomGenerator = new Random();
         randomGenerator.setSeed(SystemClock.uptimeMillis());
         while (true) {
@@ -21,8 +21,8 @@ class HelperFunctions {
                 continue;
             }
             boolean unique = true;
-            for (SaveableModelObject currentObject : _ExistingObjects) {
-                if (currentObject.getId() == newId) {
+            for (IdentificableModelObject currentObject : _ExistingObjects) {
+                if (currentObject.Id == newId) {
                     unique = false;
                     break;
                 }

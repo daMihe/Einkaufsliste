@@ -1,13 +1,16 @@
 package org.noorganization.shoppinglist.model;
 
+import android.util.SparseArray;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by michi on 12.02.15.
  */
 public class ModelManager {
+
+    public static final int INVALID_ID = 0xFFFFFFFF;
 
     private static List<Product> m_sAllProducts;
     private static List<ShoppingList> m_sAllLists;
@@ -17,22 +20,21 @@ public class ModelManager {
      * Creates a new Product and registers it.
      * @param _title A name for the Product. null is not allowed (asserted).
      * @param _defaultValue
-     * @param _unitId The id of the referencing Unit returned by {@link Unit#getId()}.
-     *                {@link SaveableModelObject#INVALID_ID} is also allowed and means something like "this product
-     *                should have no unit".
+     * @param _unitId The id of the referencing Unit returned by {@link Unit#Id}. {@link #INVALID_ID} is also allowed
+     *                and means something like "this product should have no unit".
      * @return The created Product.
      */
     public static Product CreateProduct(String _title, float _defaultValue, int _unitId) {
         if (m_sAllProducts == null) {
-            m_sAllProducts = new ArrayList<Product>();
+            m_sAllProducts = new ArrayList<>();
         }
 
         Product newProduct = new Product();
-        newProduct.setTitle(_title);
-        newProduct.setDefaultValue(_defaultValue);
-        newProduct.setUnitId(_unitId);
-        newProduct.setId(HelperFunctions.generateId(m_sAllProducts.toArray(new Product[m_sAllProducts.size()]),
-                SaveableModelObject.INVALID_ID));
+        newProduct.Title        = _title;
+        newProduct.DefaultValue = _defaultValue;
+        newProduct.UnitId       = _unitId;
+        newProduct.Id           = HelperFunctions.generateId(m_sAllProducts.toArray(new Product[m_sAllProducts.size()]),
+                INVALID_ID);
         m_sAllProducts.add(newProduct);
 
         return newProduct;
@@ -49,9 +51,10 @@ public class ModelManager {
         }
 
         ShoppingList newList = new ShoppingList();
-        newList.setTitle(_title);
-        newList.setId(HelperFunctions.generateId(m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]),
-                SaveableModelObject.INVALID_ID));
+        newList.Title       = _title;
+        newList.Id          = HelperFunctions.generateId(m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]),
+                INVALID_ID);
+        newList.ListEntries = new SparseArray<>();
         m_sAllLists.add(newList);
 
         return newList;
@@ -67,9 +70,10 @@ public class ModelManager {
         }
 
         Unit newUnit = new Unit();
-        newUnit.setUnitText(_unitText);
-        newUnit.setId(HelperFunctions.generateId(m_sAllUnits.toArray(new SaveableModelObject[m_sAllUnits.size()]),
-                SaveableModelObject.INVALID_ID));
+        newUnit.UnitText = _unitText;
+        newUnit.Id       = HelperFunctions.generateId(
+                m_sAllUnits.toArray(new IdentificableModelObject[m_sAllUnits.size()]),
+                INVALID_ID);
         m_sAllUnits.add(newUnit);
 
         return newUnit;
@@ -81,8 +85,8 @@ public class ModelManager {
      *            provided, no object will be found.
      * @return A Unit if found or null if no Unit was found.
      */
-    public static Unit findUnitById(int _id) {
-        if (_id == SaveableModelObject.INVALID_ID || m_sAllUnits == null) {
+    /*public static Unit findUnitById(int _id) {
+        if (_id == IdentificableModelObject.INVALID_ID || m_sAllUnits == null) {
             return null;
         }
         for (Unit CurrentUnit : m_sAllUnits) {
@@ -91,5 +95,5 @@ public class ModelManager {
             }
         }
         return null;
-    }
+    }*/
 }
