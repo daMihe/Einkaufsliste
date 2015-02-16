@@ -50,4 +50,17 @@ public class ModelManagerTest extends AndroidTestCase {
 
         testDb.close();
     }
+
+    public void testCreateUnit() throws Exception {
+        Unit testUnitForId = ModelManager.createUnit("l");
+
+        Unit testUnit = ModelManager.getUnitById(testUnitForId.Id);
+        assertNotNull(testUnit);
+
+        assertEquals("l", testUnit.UnitText);
+        assertTrue(1 != testUnit.Id);
+        assertTrue(ModelManager.INVALID_ID != testUnit.Id);
+
+        assertEquals("l", testUnitForId.UnitText);
+    }
 }

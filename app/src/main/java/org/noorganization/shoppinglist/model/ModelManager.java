@@ -4,10 +4,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.SystemClock;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by michi on 12.02.15.
@@ -37,8 +39,7 @@ public class ModelManager {
         newProduct.Title        = _title;
         newProduct.DefaultValue = _defaultValue;
         newProduct.UnitId       = _unitId;
-        newProduct.Id           = HelperFunctions.generateId(m_sAllProducts.toArray(new Product[m_sAllProducts.size()]),
-                INVALID_ID);
+        newProduct.Id           = generateId(m_sAllProducts.toArray(new Product[m_sAllProducts.size()]));
         m_sAllProducts.add(newProduct);
 
         return newProduct;
@@ -56,8 +57,7 @@ public class ModelManager {
 
         ShoppingList newList = new ShoppingList();
         newList.Title       = _title;
-        newList.Id          = HelperFunctions.generateId(m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]),
-                INVALID_ID);
+        newList.Id          = generateId(m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]));
         newList.ListEntries = new SparseArray<>();
         m_sAllLists.add(newList);
 
@@ -75,12 +75,35 @@ public class ModelManager {
 
         Unit newUnit = new Unit();
         newUnit.UnitText = _unitText;
-        newUnit.Id       = HelperFunctions.generateId(
-                m_sAllUnits.toArray(new IdentificableModelObject[m_sAllUnits.size()]),
-                INVALID_ID);
+        newUnit.Id       = generateId(m_sAllUnits.toArray(new IdentificableModelObject[m_sAllUnits.size()]));
         m_sAllUnits.add(newUnit);
 
         return newUnit;
+    }
+
+    /**
+     * Generates a unique id for an IdentificableModelObject object.
+     * @return A collision-free, random id
+     */
+    static int generateId(IdentificableModelObject _existingObjects[]) {
+        Random randomGenerator = new Random();
+        randomGenerator.setSeed(SystemClock.uptimeMillis());
+        while (true) {
+            int newId = randomGenerator.nextInt();
+            if (newId == INVALID_ID) {
+                continue;
+            }
+            boolean unique = true;
+            for (IdentificableModelObject currentObject : _existingObjects) {
+                if (currentObject.Id == newId) {
+                    unique = false;
+                    break;
+                }
+            }
+            if (unique) {
+                return newId;
+            }
+        }
     }
 
     public static SQLiteDatabase openAndReadDatabase(Context _context, String _name) {
@@ -175,31 +198,31 @@ public class ModelManager {
         public void onCreate(SQLiteDatabase _db) {
             // rowid's are omitted because it's not possible to refer to them, so just wasting space in this case.
             _db.execSQL("CREATE TABLE Units (" +
-                            "id INTEGER NOT NULL, " +
-                            "title STRING NOT NULL, " +
-                            "PRIMARY KEY (id)" +
-                            ") WITHOUT ROWID");
+                    "id INTEGER NOT NULL, " +
+                    "title STRING NOT NULL, " +
+                    "PRIMARY KEY (id)" +
+                    ") WITHOUT ROWID");
             _db.execSQL("CREATE TABLE Products (" +
-                            "id INTEGER NOT NULL, " +
-                            "title STRING NOT NULL, " +
-                            "defaultvalue REAL NOT NULL, " +
-                            "unit_id INTEGER, " +
-                            "PRIMARY KEY (id), " +
-                            "FOREIGN KEY (unit_id) REFERENCES Units(id) ON UPDATE RESTRICT ON DELETE CASCADE " +
-                            ") WITHOUT ROWID");
+                    "id INTEGER NOT NULL, " +
+                    "title STRING NOT NULL, " +
+                    "defaultvalue REAL NOT NULL, " +
+                    "unit_id INTEGER, " +
+                    "PRIMARY KEY (id), " +
+                    "FOREIGN KEY (unit_id) REFERENCES Units(id) ON UPDATE RESTRICT ON DELETE CASCADE " +
+                    ") WITHOUT ROWID");
             _db.execSQL("CREATE TABLE ShoppingLists (" +
-                            "id INTEGER NOT NULL," +
-                            "title STRING NOT NULL, " +
-                            "PRIMARY KEY (id)" +
-                            ") WITHOUT ROWID");
+                    "id INTEGER NOT NULL," +
+                    "title STRING NOT NULL, " +
+                    "PRIMARY KEY (id)" +
+                    ") WITHOUT ROWID");
             _db.execSQL("CREATE TABLE ProductsInShoppingLists (" +
-                            "shoppinglist_id INTEGER NOT NULL, " +
-                            "product_id INTEGER NOT NULL, " +
-                            "value REAL NOT NULL, " +
-                            "PRIMARY KEY (shoppinglist_id, product_id), " +
-                            "FOREIGN KEY (shoppinglist_id) REFERENCES ShoppingLists(id) ON UPDATE RESTRICT ON DELETE CASCADE, " +
-                            "FOREIGN KEY (product_id) REFERENCES Products(id) ON UPDATE RESTRICT ON DELETE CASCADE " +
-                            ") WITHOUT ROWID");
+                    "shoppinglist_id INTEGER NOT NULL, " +
+                    "product_id INTEGER NOT NULL, " +
+                    "value REAL NOT NULL, " +
+                    "PRIMARY KEY (shoppinglist_id, product_id), " +
+                    "FOREIGN KEY (shoppinglist_id) REFERENCES ShoppingLists(id) ON UPDATE RESTRICT ON DELETE CASCADE, " +
+                    "FOREIGN KEY (product_id) REFERENCES Products(id) ON UPDATE RESTRICT ON DELETE CASCADE " +
+                    ") WITHOUT ROWID");
         }
 
         @Override
