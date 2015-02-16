@@ -1,5 +1,9 @@
 package org.noorganization.shoppinglist.model;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
@@ -12,9 +16,9 @@ public class ModelManager {
 
     public static final int INVALID_ID = 0xFFFFFFFF;
 
-    private static List<Product> m_sAllProducts;
-    private static List<ShoppingList> m_sAllLists;
-    private static List<Unit> m_sAllUnits;
+    static List<Product> m_sAllProducts;
+    static List<ShoppingList> m_sAllLists;
+    static List<Unit> m_sAllUnits;
 
     /**
      * Creates a new Product and registers it.
@@ -24,7 +28,7 @@ public class ModelManager {
      *                and means something like "this product should have no unit".
      * @return The created Product.
      */
-    public static Product CreateProduct(String _title, float _defaultValue, int _unitId) {
+    public static Product createProduct(String _title, float _defaultValue, int _unitId) {
         if (m_sAllProducts == null) {
             m_sAllProducts = new ArrayList<>();
         }
@@ -45,7 +49,7 @@ public class ModelManager {
      * @param _title Title for the new List, simply not null.
      * @return The constructed and registered ShoppingList,
      */
-    public static ShoppingList CreateShoppingList(String _title) {
+    public static ShoppingList createShoppingList(String _title) {
         if (m_sAllLists == null) {
             m_sAllLists = new ArrayList<ShoppingList>();
         }
@@ -64,7 +68,7 @@ public class ModelManager {
      * Creates a Unit and registers it automatically in the list of all Units.
      * @param _unitText The "name" of the unit e.g. "kg" (kilogram) or "l" (liter). null is not valid.
      */
-    public static Unit CreateUnit(String _unitText) {
+    public static Unit createUnit(String _unitText) {
         if (m_sAllUnits == null) {
             m_sAllUnits = new ArrayList<Unit>();
         }
@@ -77,6 +81,136 @@ public class ModelManager {
         m_sAllUnits.add(newUnit);
 
         return newUnit;
+    }
+
+    public static SQLiteDatabase openAndReadDatabase(Context _context, String _name) {
+        DBOpenHelper databaseHelper = new DBOpenHelper(_context, _name, null, DBOpenHelper.CURRENT_DATABASE_VERSION);
+        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+
+        if (m_sAllUnits == null) {
+            m_sAllUnits = new ArrayList<>();
+        } else {
+            m_sAllUnits.clear();
+        }
+
+        Cursor allUnits = db.query("Units",
+                new String[]{ "id", "title" },
+                null, new String[0], null, null, null);
+        allUnits.moveToFirst();
+        while (!allUnits.isAfterLast()) {
+            Unit existingUnit = new Unit();
+            existingUnit.UnitText = allUnits.getString(allUnits.getColumnIndex("title"));
+            existingUnit.Id       = allUnits.getInt(allUnits.getColumnIndex("id"));
+            m_sAllUnits.add(existingUnit);
+            allUnits.moveToNext();
+        }
+        allUnits.close();
+
+        if (m_sAllProducts == null) {
+            m_sAllProducts = new ArrayList<>();
+        } else {
+            m_sAllProducts.clear();
+        }
+
+        Cursor allProducts = db.query("Products",
+                new String[]{ "id", "title", "defaultvalue", "unit_id" },
+                null, new String[0], null, null, null);
+        allProducts.moveToFirst();
+        int indexOfUnitId = allProducts.getColumnIndex("unit_id");
+        while (!allProducts.isAfterLast()) {
+            Product existingProduct = new Product();
+            existingProduct.DefaultValue = allProducts.getFloat(allProducts.getColumnIndex("defaultvalue"));
+            existingProduct.Title        = allProducts.getString(allProducts.getColumnIndex("title"));
+            existingProduct.Id           = allProducts.getInt(allProducts.getColumnIndex("id"));
+            existingProduct.UnitId       = (allProducts.isNull(indexOfUnitId) ?
+                    INVALID_ID : allProducts.getInt(indexOfUnitId));
+            m_sAllProducts.add(existingProduct);
+            allProducts.moveToNext();
+        }
+        allProducts.close();
+
+        if (m_sAllLists == null) {
+            m_sAllLists = new ArrayList<>();
+        } else {
+            m_sAllLists.clear();
+        }
+
+        Cursor allLists = db.query("ShoppingLists",
+                new String[]{ "id", "title" },
+                null, new String[0], null, null, null);
+        allLists.moveToFirst();
+        while (!allLists.isAfterLast()) {
+            ShoppingList existingList = new ShoppingList();
+            existingList.Title       = allLists.getString(allLists.getColumnIndex("title"));
+            existingList.Id          = allLists.getInt(allLists.getColumnIndex("id"));
+            existingList.ListEntries = new SparseArray<>();
+            Cursor allItemsInList = db.query("ProductsInShoppingLists",
+                    new String[] { "product_id", "value" },
+                    "shoppinglist_id = ?",
+                    new String[] { existingList.Id+"" },
+                    null, null,
+                    "product_id ASC"); // product-id's and -values where shoppinglist_id is the current id, ordered.
+            for (allItemsInList.moveToFirst(); !allItemsInList.isAfterLast(); allItemsInList.moveToNext()) {
+                existingList.ListEntries.append(allItemsInList.getInt(allItemsInList.getColumnIndex("product_id")),
+                        allItemsInList.getFloat(allItemsInList.getColumnIndex("value")));
+            }
+            allItemsInList.close();
+
+            m_sAllLists.add(existingList);
+            allLists.moveToNext();
+        }
+        allLists.close();
+
+        return db;
+    }
+
+    static class DBOpenHelper extends SQLiteOpenHelper {
+        public static final int CURRENT_DATABASE_VERSION = 1;
+
+        public DBOpenHelper(Context _context, String _name, SQLiteDatabase.CursorFactory _cursorFactory, int _version) {
+            super(_context, _name, _cursorFactory, _version);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase _db) {
+            // rowid's are omitted because it's not possible to refer to them, so just wasting space in this case.
+            _db.execSQL("CREATE TABLE Units (" +
+                            "id INTEGER NOT NULL, " +
+                            "title STRING NOT NULL, " +
+                            "PRIMARY KEY (id)" +
+                            ") WITHOUT ROWID");
+            _db.execSQL("CREATE TABLE Products (" +
+                            "id INTEGER NOT NULL, " +
+                            "title STRING NOT NULL, " +
+                            "defaultvalue REAL NOT NULL, " +
+                            "unit_id INTEGER, " +
+                            "PRIMARY KEY (id), " +
+                            "FOREIGN KEY (unit_id) REFERENCES Units(id) ON UPDATE RESTRICT ON DELETE CASCADE " +
+                            ") WITHOUT ROWID");
+            _db.execSQL("CREATE TABLE ShoppingLists (" +
+                            "id INTEGER NOT NULL," +
+                            "title STRING NOT NULL, " +
+                            "PRIMARY KEY (id)" +
+                            ") WITHOUT ROWID");
+            _db.execSQL("CREATE TABLE ProductsInShoppingLists (" +
+                            "shoppinglist_id INTEGER NOT NULL, " +
+                            "product_id INTEGER NOT NULL, " +
+                            "value REAL NOT NULL, " +
+                            "PRIMARY KEY (shoppinglist_id, product_id), " +
+                            "FOREIGN KEY (shoppinglist_id) REFERENCES ShoppingLists(id) ON UPDATE RESTRICT ON DELETE CASCADE, " +
+                            "FOREIGN KEY (product_id) REFERENCES Products(id) ON UPDATE RESTRICT ON DELETE CASCADE " +
+                            ") WITHOUT ROWID");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase _db, int _oldVersion, int _newVersion) {
+            // Currently there is only db version 1.
+        }
+
+        @Override
+        public void onConfigure(SQLiteDatabase _db) {
+            _db.rawQuery("PRAGMA foreign_keys = ON", new String[0]);
+        }
     }
 
     /**
