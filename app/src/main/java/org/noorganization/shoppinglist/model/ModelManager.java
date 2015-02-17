@@ -242,15 +242,15 @@ public class ModelManager {
      *            provided, no object will be found.
      * @return A Unit if found or null if no Unit was found.
      */
-    /*public static Unit findUnitById(int _id) {
-        if (_id == IdentificableModelObject.INVALID_ID || m_sAllUnits == null) {
+    public static Unit getUnitById(int _id) {
+        if (_id == INVALID_ID || m_sAllUnits == null) {
             return null;
         }
         for (Unit CurrentUnit : m_sAllUnits) {
-            if (CurrentUnit.getId() == _id) {
+            if (CurrentUnit.Id == _id) {
                 return CurrentUnit;
             }
         }
         return null;
-    }*/
+    }
 }
