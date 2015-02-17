@@ -238,8 +238,7 @@ public class ModelManager {
 
     /**
      * Searches a Unit by it's id.
-     * @param _id The internal id of the unit. If {@link org.noorganization.shoppinglist.model.Unit#INVALID_ID} is
-     *            provided, no object will be found.
+     * @param _id The internal id of the unit. If {@link #INVALID_ID} is provided, no object will be found.
      * @return A Unit if found or null if no Unit was found.
      */
     public static Unit getUnitById(int _id) {

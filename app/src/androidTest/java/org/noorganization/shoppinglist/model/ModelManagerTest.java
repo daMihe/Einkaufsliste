@@ -7,6 +7,8 @@ public class ModelManagerTest extends AndroidTestCase {
 
     public static final String DB_NAME = "nonOrganizationalTestBase.db";
 
+    SQLiteDatabase m_currentConnection;
+
     public void setUp() throws Exception {
         super.setUp();
         ModelManager.DBOpenHelper openHelper = new ModelManager.DBOpenHelper(getContext(), DB_NAME, null,
@@ -19,14 +21,17 @@ public class ModelManagerTest extends AndroidTestCase {
         testDb.execSQL("INSERT INTO ProductsInShoppingLists VALUES (1, 1, 2.0)");
 
         testDb.close();
+
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
     }
 
     public void tearDown() throws Exception {
+        m_currentConnection.close();
+
         getContext().deleteDatabase(DB_NAME);
     }
 
     public void testOpenAndReadDatabase() throws Exception {
-        SQLiteDatabase testDb = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
 
         assertEquals(1, ModelManager.m_sAllLists.size());
         assertEquals(1, ModelManager.m_sAllProducts.size());
@@ -47,8 +52,6 @@ public class ModelManagerTest extends AndroidTestCase {
         Unit testUnit = ModelManager.m_sAllUnits.get(0);
         assertEquals("kg", testUnit.UnitText);
         assertEquals(1, testUnit.Id);
-
-        testDb.close();
     }
 
     public void testCreateUnit() throws Exception {
@@ -62,5 +65,13 @@ public class ModelManagerTest extends AndroidTestCase {
         assertTrue(ModelManager.INVALID_ID != testUnit.Id);
 
         assertEquals("l", testUnitForId.UnitText);
+    }
+
+    public void testGetUnitById() throws Exception {
+        Unit positiveUnit = ModelManager.getUnitById(1);
+        assertEquals("kg", positiveUnit.UnitText);
+
+        assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
+        assertNull(ModelManager.getUnitById(725));
     }
 }
