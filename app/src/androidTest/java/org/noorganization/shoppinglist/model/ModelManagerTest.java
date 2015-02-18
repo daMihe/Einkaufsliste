@@ -74,4 +74,89 @@ public class ModelManagerTest extends AndroidTestCase {
         assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(ModelManager.getUnitById(725));
     }
+
+    public void testGetAllUnits() throws Exception {
+        Unit allUnits[] = ModelManager.getAllUnits();
+
+        assertNotNull(allUnits);
+        assertEquals(1, allUnits.length);
+        assertNotSame(ModelManager.m_sAllUnits.get(0), allUnits[0]);
+
+        assertEquals(1, allUnits[0].Id);
+    }
+
+    public void testCreateProduct() throws Exception {
+        Product testProductForId = ModelManager.createProduct("Product 2", 5.0f, ModelManager.INVALID_ID);
+
+        Product testProduct = ModelManager.getProductById(testProductForId.Id);
+        assertNotNull(testProduct);
+
+        assertTrue(1 != testProduct.Id);
+        assertTrue(ModelManager.INVALID_ID != testProduct.Id);
+
+        assertEquals("Product 2", testProduct.Title);
+        assertEquals(testProductForId.Id, testProduct.Id);
+        assertEquals(5.0f, testProduct.DefaultValue, 0.001f);
+        assertEquals(ModelManager.INVALID_ID, testProduct.UnitId);
+    }
+
+    public void testGetProductById() throws Exception {
+        Product positiveProduct = ModelManager.getProductById(1);
+        assertEquals("Reis", positiveProduct.Title);
+        assertEquals(1.0f, positiveProduct.DefaultValue, 0.001f);
+        assertEquals(1, positiveProduct.UnitId);
+        assertEquals(1, positiveProduct.Id);
+
+        assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
+        assertNull(ModelManager.getUnitById(725));
+    }
+
+    public void testGetAllProducts() throws Exception {
+        Product allProducts[] = ModelManager.getAllProducts();
+
+        assertNotNull(allProducts);
+        assertEquals(1, allProducts.length);
+        assertNotSame(ModelManager.m_sAllProducts.get(0), allProducts[0]);
+
+        assertEquals(1, allProducts[0].Id);
+    }
+
+    public void testCreateShoppingList() throws Exception {
+        ShoppingList testShoppingListForId = ModelManager.createShoppingList("Arbeitsliste");
+
+        ShoppingList testShoppingList = ModelManager.getShoppingListById(testShoppingListForId.Id);
+        assertNotNull(testShoppingList);
+
+        assertTrue(1 != testShoppingList.Id);
+        assertTrue(ModelManager.INVALID_ID != testShoppingList.Id);
+
+        assertEquals("Arbeitsliste", testShoppingList.Title);
+        assertEquals(testShoppingListForId.Id, testShoppingList.Id);
+        assertNotNull(testShoppingList.ListEntries);
+        assertEquals(0, testShoppingList.ListEntries.size());
+    }
+
+    public void testGetShoppingListById() throws Exception {
+        ShoppingList positiveShoppingList = ModelManager.getShoppingListById(1);
+        assertEquals("Meine Einkaufsliste", positiveShoppingList.Title);
+        assertEquals(1, positiveShoppingList.Id);
+        assertNotNull(positiveShoppingList.ListEntries);
+        assertEquals(1, positiveShoppingList.ListEntries.keyAt(0));
+        assertEquals(2.0f, positiveShoppingList.ListEntries.valueAt(0).floatValue(), 0.001f);
+
+        assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
+        assertNull(ModelManager.getUnitById(725));
+    }
+
+    public void testGetAllShoppingLists() throws Exception {
+        ShoppingList allShoppingLists[] = ModelManager.getAllShoppingLists();
+
+        assertNotNull(allShoppingLists);
+        assertEquals(1, allShoppingLists.length);
+        assertNotSame(ModelManager.m_sAllLists.get(0), allShoppingLists[0]);
+
+        assertEquals(1, allShoppingLists[0].Id);
+    }
+
+    // TODO Create asserts for test if db is updated
 }

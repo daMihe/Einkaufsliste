@@ -187,6 +187,48 @@ public class ModelManager {
         return db;
     }
 
+    public static Product getProductById(int i) {
+        // TODO implementation
+        return null;
+    }
+
+    public static Product[] getAllProducts() {
+        // TODO implementation
+        return new Product[0];
+    }
+
+    public static Unit[] getAllUnits() {
+        // TODO implementation
+        return new Unit[0];
+    }
+
+    /**
+     * Searches a Unit by it's id.
+     * @param _id The internal id of the unit. If {@link #INVALID_ID} is provided, no object will be found.
+     * @return A Unit if found or null if no Unit was found.
+     */
+    public static Unit getUnitById(int _id) {
+        if (_id == INVALID_ID || m_sAllUnits == null) {
+            return null;
+        }
+        for (Unit CurrentUnit : m_sAllUnits) {
+            if (CurrentUnit.Id == _id) {
+                return CurrentUnit;
+            }
+        }
+        return null;
+    }
+
+    public static ShoppingList getShoppingListById(int _id) {
+        // TODO implementation
+        return null;
+    }
+
+    public static ShoppingList[] getAllShoppingLists() {
+        // TODO implementation
+        return new ShoppingList[0];
+    }
+
     static class DBOpenHelper extends SQLiteOpenHelper {
         public static final int CURRENT_DATABASE_VERSION = 1;
 
@@ -234,22 +276,5 @@ public class ModelManager {
         public void onConfigure(SQLiteDatabase _db) {
             _db.rawQuery("PRAGMA foreign_keys = ON", new String[0]);
         }
-    }
-
-    /**
-     * Searches a Unit by it's id.
-     * @param _id The internal id of the unit. If {@link #INVALID_ID} is provided, no object will be found.
-     * @return A Unit if found or null if no Unit was found.
-     */
-    public static Unit getUnitById(int _id) {
-        if (_id == INVALID_ID || m_sAllUnits == null) {
-            return null;
-        }
-        for (Unit CurrentUnit : m_sAllUnits) {
-            if (CurrentUnit.Id == _id) {
-                return CurrentUnit;
-            }
-        }
-        return null;
     }
 }
