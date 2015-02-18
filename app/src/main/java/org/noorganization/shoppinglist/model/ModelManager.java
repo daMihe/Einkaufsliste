@@ -187,19 +187,58 @@ public class ModelManager {
         return db;
     }
 
-    public static Product getProductById(int i) {
-        // TODO implementation
-        return null;
-    }
-
     public static Product[] getAllProducts() {
-        // TODO implementation
-        return new Product[0];
+        if (m_sAllProducts == null || m_sAllProducts.size() == 0) {
+            return new Product[0];
+        }
+
+        Product rtn[] = new Product[m_sAllProducts.size()];
+        int index = 0;
+        for (Product currentProduct : m_sAllProducts) {
+            rtn[index] = new Product(currentProduct);
+            index++;
+        }
+        return rtn;
     }
 
     public static Unit[] getAllUnits() {
-        // TODO implementation
-        return new Unit[0];
+        if (m_sAllUnits == null || m_sAllUnits.size() == 0) {
+            return new Unit[0];
+        }
+
+        Unit rtn[] = new Unit[m_sAllUnits.size()];
+        int index = 0;
+        for (Unit currentUnit : m_sAllUnits) {
+            rtn[index] = new Unit(currentUnit);
+            index++;
+        }
+        return rtn;
+    }
+
+    public static ShoppingList[] getAllShoppingLists() {
+        if (m_sAllLists == null || m_sAllLists.size() == 0) {
+            return new ShoppingList[0];
+        }
+
+        ShoppingList rtn[] = new ShoppingList[m_sAllLists.size()];
+        int index = 0;
+        for (ShoppingList currentList : m_sAllLists) {
+            rtn[index] = new ShoppingList(currentList);
+            index++;
+        }
+        return rtn;
+    }
+
+    public static Product getProductById(int _id) {
+        if (_id == INVALID_ID || m_sAllProducts == null) {
+            return null;
+        }
+        for (Product currentProduct : m_sAllProducts) {
+            if (currentProduct.Id == _id) {
+                return new Product(currentProduct);
+            }
+        }
+        return null;
     }
 
     /**
@@ -213,20 +252,22 @@ public class ModelManager {
         }
         for (Unit CurrentUnit : m_sAllUnits) {
             if (CurrentUnit.Id == _id) {
-                return CurrentUnit;
+                return new Unit(CurrentUnit);
             }
         }
         return null;
     }
 
     public static ShoppingList getShoppingListById(int _id) {
-        // TODO implementation
+        if (_id == INVALID_ID || m_sAllLists == null) {
+            return null;
+        }
+        for (ShoppingList currentList : m_sAllLists) {
+            if (currentList.Id == _id) {
+                return new ShoppingList(currentList);
+            }
+        }
         return null;
-    }
-
-    public static ShoppingList[] getAllShoppingLists() {
-        // TODO implementation
-        return new ShoppingList[0];
     }
 
     static class DBOpenHelper extends SQLiteOpenHelper {

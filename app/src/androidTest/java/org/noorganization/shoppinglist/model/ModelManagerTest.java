@@ -63,13 +63,13 @@ public class ModelManagerTest extends AndroidTestCase {
         assertEquals("l", testUnit.UnitText);
         assertTrue(1 != testUnit.Id);
         assertTrue(ModelManager.INVALID_ID != testUnit.Id);
-
-        assertEquals("l", testUnitForId.UnitText);
+        assertNotSame(testUnitForId, testUnit);
     }
 
     public void testGetUnitById() throws Exception {
         Unit positiveUnit = ModelManager.getUnitById(1);
         assertEquals("kg", positiveUnit.UnitText);
+        assertNotSame(positiveUnit, ModelManager.m_sAllUnits.get(0));
 
         assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(ModelManager.getUnitById(725));
@@ -98,6 +98,8 @@ public class ModelManagerTest extends AndroidTestCase {
         assertEquals(testProductForId.Id, testProduct.Id);
         assertEquals(5.0f, testProduct.DefaultValue, 0.001f);
         assertEquals(ModelManager.INVALID_ID, testProduct.UnitId);
+
+        assertNotSame(testProduct, testProductForId);
     }
 
     public void testGetProductById() throws Exception {
@@ -106,6 +108,7 @@ public class ModelManagerTest extends AndroidTestCase {
         assertEquals(1.0f, positiveProduct.DefaultValue, 0.001f);
         assertEquals(1, positiveProduct.UnitId);
         assertEquals(1, positiveProduct.Id);
+        assertNotSame(positiveProduct, ModelManager.m_sAllProducts.get(0));
 
         assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(ModelManager.getUnitById(725));
@@ -143,6 +146,7 @@ public class ModelManagerTest extends AndroidTestCase {
         assertNotNull(positiveShoppingList.ListEntries);
         assertEquals(1, positiveShoppingList.ListEntries.keyAt(0));
         assertEquals(2.0f, positiveShoppingList.ListEntries.valueAt(0).floatValue(), 0.001f);
+        assertNotSame(positiveShoppingList, ModelManager.m_sAllLists.get(0));
 
         assertNull(ModelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(ModelManager.getUnitById(725));
