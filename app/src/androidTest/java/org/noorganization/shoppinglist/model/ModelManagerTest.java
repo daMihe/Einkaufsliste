@@ -235,5 +235,7 @@ public class ModelManagerTest extends AndroidTestCase {
         m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
         assertNotNull(ModelManager.getShoppingListById(1));
         assertEquals("blubbla", ModelManager.getShoppingListById(1).Title);
+
+        assertEquals(2.0f, ModelManager.getShoppingListById(1).ListEntries.get(1, Float.NaN), 0.001f);
     }
 }

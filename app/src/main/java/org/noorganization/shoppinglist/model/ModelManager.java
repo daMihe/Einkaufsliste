@@ -56,7 +56,7 @@ public class ModelManager {
 
         m_sAllProducts.add(newProduct);
 
-        return newProduct;
+        return new Product(newProduct);
     }
 
     /**
@@ -86,7 +86,7 @@ public class ModelManager {
 
         m_sAllLists.add(newList);
 
-        return newList;
+        return new ShoppingList(newList);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ModelManager {
 
         m_sAllUnits.add(newUnit);
 
-        return newUnit;
+        return new Unit(newUnit);
     }
 
     /**
@@ -130,17 +130,19 @@ public class ModelManager {
             if (newId == INVALID_ID) {
                 continue;
             }
-            boolean unique = true;
-            for (IdentificableModelObject currentObject : _existingObjects) {
-                if (currentObject.Id == newId) {
-                    unique = false;
-                    break;
-                }
-            }
-            if (unique) {
+            if (!idExists(newId, _existingObjects)) {
                 return newId;
             }
         }
+    }
+
+    static boolean idExists(int _idToCheck, IdentificableModelObject _existingObjects[]) {
+        for (IdentificableModelObject currentObject : _existingObjects) {
+            if (currentObject.Id == _idToCheck) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -339,14 +341,28 @@ public class ModelManager {
     }
 
     /**
-     * @param _unitToChange The changed unit. Changing the id is dangerous, since maybe another unit will be
-     *                      overwritten.
+     * @param _unitToUpdate The changed unit. Changing the id is dangerous, since another unit may be overwritten.
      * @param _db Open connection to a writable database.
      * @return Whether update succeeded.
      */
-    public static boolean updateUnit(Unit _unitToChange, SQLiteDatabase _db) {
-        // TODO implement
-        return false;
+    public static boolean updateUnit(Unit _unitToUpdate, SQLiteDatabase _db) {
+        if (m_sAllUnits == null || !idExists(_unitToUpdate.Id, m_sAllUnits.toArray(new Unit[m_sAllUnits.size()]))) {
+            return false;
+        }
+
+        ContentValues unitsUpdateValues = new ContentValues();
+        unitsUpdateValues.put("title", _unitToUpdate.UnitText);
+        if(_db.update("Units", unitsUpdateValues, "id = ?", new String[]{ _unitToUpdate.Id + "" }) == 0) {
+            return false;
+        }
+
+        for (int currentIndex = 0; currentIndex < m_sAllUnits.size(); currentIndex++) {
+            if (m_sAllUnits.get(currentIndex).Id == _unitToUpdate.Id) {
+                m_sAllUnits.set(currentIndex, new Unit(_unitToUpdate));
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -357,8 +373,27 @@ public class ModelManager {
      * @return Whether update succeeded.
      */
     public static boolean updateProduct(Product _productToUpdate, SQLiteDatabase _db) {
-        // TODO implement
-        return false;
+        if (m_sAllProducts == null ||
+                !idExists(_productToUpdate.Id, m_sAllProducts.toArray(new Product[m_sAllProducts.size()]))) {
+            return false;
+        }
+
+        ContentValues updatedProductValues = new ContentValues();
+        updatedProductValues.put("title", _productToUpdate.Title);
+        updatedProductValues.put("defaultvalue", _productToUpdate.DefaultValue);
+        updatedProductValues.put("unit_id", (_productToUpdate.UnitId == INVALID_ID ? null : _productToUpdate.UnitId));
+        if (_db.update("Products", updatedProductValues, "id = ?", new String[]{ _productToUpdate.Id + "" }) == 0) {
+            return false;
+        }
+
+        for (int currentIndex = 0; currentIndex < m_sAllProducts.size(); currentIndex++) {
+            if (m_sAllProducts.get(currentIndex).Id == _productToUpdate.Id) {
+                m_sAllProducts.set(currentIndex, new Product(_productToUpdate));
+                break;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -369,8 +404,47 @@ public class ModelManager {
      * @return Whether update succeeded.
      */
     public static boolean updateShoppingList(ShoppingList _shoppingListToUpdate, SQLiteDatabase _db) {
-        // TODO implement
-        return false;
+        if (m_sAllLists == null ||
+                !idExists(_shoppingListToUpdate.Id, m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]))) {
+            return false;
+        }
+
+        boolean dbUpdatedSuccessfully = true;
+        ContentValues updatedListValues = new ContentValues();
+        updatedListValues.put("title", _shoppingListToUpdate.Title);
+        try {
+            _db.beginTransaction();
+            if(_db.update("ShoppingLists", updatedListValues, "id = ?",
+                    new String[]{ _shoppingListToUpdate.Id + "" }) == 0) {
+                throw new Exception();
+            }
+            _db.delete("ProductsInShoppingLists", "shoppinglist_id = ?", new String[]{ _shoppingListToUpdate.Id + "" });
+            for (int currentProduct = 0; currentProduct < _shoppingListToUpdate.ListEntries.size(); currentProduct++) {
+                ContentValues updatedItem = new ContentValues();
+                updatedItem.put("shoppinglist_id", _shoppingListToUpdate.Id);
+                updatedItem.put("product_id", _shoppingListToUpdate.ListEntries.keyAt(currentProduct));
+                updatedItem.put("value", _shoppingListToUpdate.ListEntries.valueAt(currentProduct).floatValue());
+                _db.insertOrThrow("ProductsInShoppingLists", null, updatedItem);
+            }
+            _db.setTransactionSuccessful();
+        } catch (Exception e) {
+            dbUpdatedSuccessfully = false;
+        } finally {
+            _db.endTransaction();
+        }
+
+        if (!dbUpdatedSuccessfully) {
+            return false;
+        }
+
+        for (int currentListIndex = 0; currentListIndex < m_sAllLists.size(); currentListIndex++) {
+            if (m_sAllLists.get(currentListIndex).Id == _shoppingListToUpdate.Id) {
+                m_sAllLists.set(currentListIndex, new ShoppingList(_shoppingListToUpdate));
+                break;
+            }
+        }
+
+        return true;
     }
 
     static class DBOpenHelper extends SQLiteOpenHelper {
