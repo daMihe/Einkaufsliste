@@ -338,6 +338,41 @@ public class ModelManager {
         return null;
     }
 
+    /**
+     * @param _unitToChange The changed unit. Changing the id is dangerous, since maybe another unit will be
+     *                      overwritten.
+     * @param _db Open connection to a writable database.
+     * @return Whether update succeeded.
+     */
+    public static boolean updateUnit(Unit _unitToChange, SQLiteDatabase _db) {
+        // TODO implement
+        return false;
+    }
+
+    /**
+     * Does not throw an exception if update of database fails. Check return value.
+     * @param _productToUpdate The changed Product. Changing id is not recommended and may fail (if not another Product
+     *                         will be overwritten).
+     * @param _db An open connection to a writable database.
+     * @return Whether update succeeded.
+     */
+    public static boolean updateProduct(Product _productToUpdate, SQLiteDatabase _db) {
+        // TODO implement
+        return false;
+    }
+
+    /**
+     * Does not throw an exception if update of database fails. Check return value.
+     * @param _shoppingListToUpdate The changed list. Changing id is not recommended and may fail (if not, another
+     *                              ShoppingList will be overwritten).
+     * @param _db An open connection to a writable database.
+     * @return Whether update succeeded.
+     */
+    public static boolean updateShoppingList(ShoppingList _shoppingListToUpdate, SQLiteDatabase _db) {
+        // TODO implement
+        return false;
+    }
+
     static class DBOpenHelper extends SQLiteOpenHelper {
         public static final int CURRENT_DATABASE_VERSION = 1;
 

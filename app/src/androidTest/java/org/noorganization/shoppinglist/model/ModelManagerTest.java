@@ -1,6 +1,7 @@
 package org.noorganization.shoppinglist.model;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.AvoidXfermode;
 import android.test.AndroidTestCase;
 
 public class ModelManagerTest extends AndroidTestCase {
@@ -183,5 +184,56 @@ public class ModelManagerTest extends AndroidTestCase {
         assertNotSame(ModelManager.m_sAllLists.get(0), allShoppingLists[0]);
 
         assertEquals(1, allShoppingLists[0].Id);
+    }
+
+    public void testUpdateUnit() throws Exception {
+        Unit unitOfChange = ModelManager.getUnitById(1);
+
+        unitOfChange.UnitText = "blubbla";
+        assertTrue(ModelManager.updateUnit(unitOfChange, m_currentConnection));
+        assertEquals("blubbla", ModelManager.getUnitById(1).UnitText);
+
+        unitOfChange.Id = 2;
+        assertFalse(ModelManager.updateUnit(unitOfChange, m_currentConnection));
+        assertNotNull(ModelManager.getUnitById(1));
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+        assertNotNull(ModelManager.getUnitById(1));
+        assertEquals("blubbla", ModelManager.getUnitById(1).UnitText);
+    }
+
+    public void testUpdateProduct() throws Exception {
+        Product productOfChange = ModelManager.getProductById(1);
+
+        productOfChange.Title = "blubbla";
+        assertTrue(ModelManager.updateProduct(productOfChange, m_currentConnection));
+        assertEquals("blubbla", ModelManager.getProductById(1).Title);
+
+        productOfChange.Id = 2;
+        assertFalse(ModelManager.updateProduct(productOfChange, m_currentConnection));
+        assertNotNull(ModelManager.getProductById(1));
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+        assertNotNull(ModelManager.getProductById(1));
+        assertEquals("blubbla", ModelManager.getProductById(1).Title);
+    }
+
+    public void testUpdateShoppingList() throws Exception {
+        ShoppingList shoppingListOfChange = ModelManager.getShoppingListById(1);
+
+        shoppingListOfChange.Title = "blubbla";
+        assertTrue(ModelManager.updateShoppingList(shoppingListOfChange, m_currentConnection));
+        assertEquals("blubbla", ModelManager.getShoppingListById(1).Title);
+
+        shoppingListOfChange.Id = 2;
+        assertFalse(ModelManager.updateShoppingList(shoppingListOfChange, m_currentConnection));
+        assertNotNull(ModelManager.getShoppingListById(1));
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+        assertNotNull(ModelManager.getShoppingListById(1));
+        assertEquals("blubbla", ModelManager.getShoppingListById(1).Title);
     }
 }
