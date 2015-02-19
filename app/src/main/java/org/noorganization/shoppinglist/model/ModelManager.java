@@ -1,5 +1,6 @@
 package org.noorganization.shoppinglist.model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,14 +25,16 @@ public class ModelManager {
     static List<Unit> m_sAllUnits;
 
     /**
-     * Creates a new Product and registers it.
+     * Creates a new Product and registers it. This method is does not throw anything if saving to database fails (see
+     * return value).
      * @param _title A name for the Product. null is not allowed
      * @param _defaultValue The default value when adding to a shopping list.
      * @param _unitId The id of the referencing Unit returned by {@link Unit#Id}. {@link #INVALID_ID} is also allowed
      *                and means something like "this product should have no unit".
-     * @return The created Product.
+     * @param _db Open connection to a writable database.
+     * @return The created Product. Null if saving to database failed.
      */
-    public static Product createProduct(String _title, float _defaultValue, int _unitId) {
+    public static Product createProduct(String _title, float _defaultValue, int _unitId, SQLiteDatabase _db) {
         if (m_sAllProducts == null) {
             m_sAllProducts = new ArrayList<>();
         }
@@ -41,17 +44,29 @@ public class ModelManager {
         newProduct.DefaultValue = _defaultValue;
         newProduct.UnitId       = _unitId;
         newProduct.Id           = generateId(m_sAllProducts.toArray(new Product[m_sAllProducts.size()]));
+
+        ContentValues insertionValues = new ContentValues();
+        insertionValues.put("title", _title);
+        insertionValues.put("defaultvalue", _defaultValue);
+        insertionValues.put("unit_id", (_unitId == INVALID_ID ? null : _unitId));
+        insertionValues.put("id", newProduct.Id);
+        if(_db.insert("Products", null, insertionValues) == -1) {
+            return null;
+        }
+
         m_sAllProducts.add(newProduct);
 
         return newProduct;
     }
 
     /**
-     * Creates a ShoppingList and registers it automatically to the List of ShoppingList's.
+     * Creates a ShoppingList and registers it automatically to the List of ShoppingList's. No exception is thrown when
+     * saving fails. Check the returned object.
      * @param _title Title for the new List, simply not null.
-     * @return The constructed and registered ShoppingList,
+     * @param _db Open connection to a writable database.
+     * @return The constructed and registered ShoppingList, Or null if saving to database failed.
      */
-    public static ShoppingList createShoppingList(String _title) {
+    public static ShoppingList createShoppingList(String _title, SQLiteDatabase _db) {
         if (m_sAllLists == null) {
             m_sAllLists = new ArrayList<>();
         }
@@ -60,16 +75,28 @@ public class ModelManager {
         newList.Title       = _title;
         newList.Id          = generateId(m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]));
         newList.ListEntries = new SparseArray<>();
+
+
+        ContentValues insertionValues = new ContentValues();
+        insertionValues.put("title", _title);
+        insertionValues.put("id", newList.Id);
+        if(_db.insert("ShoppingLists", null, insertionValues) == -1) {
+            return null;
+        }
+
         m_sAllLists.add(newList);
 
         return newList;
     }
 
     /**
-     * Creates a Unit and registers it automatically in the list of all Units.
+     * Creates a Unit and registers it automatically in the list of all Units. No exception will be thrown if saving
+     * fails.
      * @param _unitText The "name" of the unit e.g. "kg" (kilogram) or "l" (liter). null is not valid.
+     * @param _db Open connection to a writable database.
+     * @return The created and saved object or null if saving did not work.
      */
-    public static Unit createUnit(String _unitText) {
+    public static Unit createUnit(String _unitText, SQLiteDatabase _db) {
         if (m_sAllUnits == null) {
             m_sAllUnits = new ArrayList<>();
         }
@@ -77,6 +104,15 @@ public class ModelManager {
         Unit newUnit = new Unit();
         newUnit.UnitText = _unitText;
         newUnit.Id       = generateId(m_sAllUnits.toArray(new IdentificableModelObject[m_sAllUnits.size()]));
+
+
+        ContentValues insertionValues = new ContentValues();
+        insertionValues.put("title", _unitText);
+        insertionValues.put("id", newUnit.Id);
+        if(_db.insert("Units", null, insertionValues) == -1) {
+            return null;
+        }
+
         m_sAllUnits.add(newUnit);
 
         return newUnit;

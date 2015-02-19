@@ -52,10 +52,17 @@ public class ModelManagerTest extends AndroidTestCase {
         Unit testUnit = ModelManager.m_sAllUnits.get(0);
         assertEquals("kg", testUnit.UnitText);
         assertEquals(1, testUnit.Id);
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+
+        assertEquals(1, ModelManager.m_sAllLists.size());
+        assertEquals(1, ModelManager.m_sAllProducts.size());
+        assertEquals(1, ModelManager.m_sAllUnits.size());
     }
 
     public void testCreateUnit() throws Exception {
-        Unit testUnitForId = ModelManager.createUnit("l");
+        Unit testUnitForId = ModelManager.createUnit("l", m_currentConnection);
 
         Unit testUnit = ModelManager.getUnitById(testUnitForId.Id);
         assertNotNull(testUnit);
@@ -64,6 +71,11 @@ public class ModelManagerTest extends AndroidTestCase {
         assertTrue(1 != testUnit.Id);
         assertTrue(ModelManager.INVALID_ID != testUnit.Id);
         assertNotSame(testUnitForId, testUnit);
+
+        assertEquals(2, ModelManager.m_sAllUnits.size());
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+        assertEquals(2, ModelManager.m_sAllUnits.size());
     }
 
     public void testGetUnitById() throws Exception {
@@ -86,7 +98,8 @@ public class ModelManagerTest extends AndroidTestCase {
     }
 
     public void testCreateProduct() throws Exception {
-        Product testProductForId = ModelManager.createProduct("Product 2", 5.0f, ModelManager.INVALID_ID);
+        Product testProductForId = ModelManager.createProduct("Product 2", 5.0f, ModelManager.INVALID_ID,
+                m_currentConnection);
 
         Product testProduct = ModelManager.getProductById(testProductForId.Id);
         assertNotNull(testProduct);
@@ -100,6 +113,11 @@ public class ModelManagerTest extends AndroidTestCase {
         assertEquals(ModelManager.INVALID_ID, testProduct.UnitId);
 
         assertNotSame(testProduct, testProductForId);
+
+        assertEquals(2, ModelManager.m_sAllProducts.size());
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+        assertEquals(2, ModelManager.m_sAllProducts.size());
     }
 
     public void testGetProductById() throws Exception {
@@ -125,7 +143,7 @@ public class ModelManagerTest extends AndroidTestCase {
     }
 
     public void testCreateShoppingList() throws Exception {
-        ShoppingList testShoppingListForId = ModelManager.createShoppingList("Arbeitsliste");
+        ShoppingList testShoppingListForId = ModelManager.createShoppingList("Arbeitsliste", m_currentConnection);
 
         ShoppingList testShoppingList = ModelManager.getShoppingListById(testShoppingListForId.Id);
         assertNotNull(testShoppingList);
@@ -137,6 +155,11 @@ public class ModelManagerTest extends AndroidTestCase {
         assertEquals(testShoppingListForId.Id, testShoppingList.Id);
         assertNotNull(testShoppingList.ListEntries);
         assertEquals(0, testShoppingList.ListEntries.size());
+
+        assertEquals(2, ModelManager.m_sAllLists.size());
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+        assertEquals(2, ModelManager.m_sAllLists.size());
     }
 
     public void testGetShoppingListById() throws Exception {
@@ -161,6 +184,4 @@ public class ModelManagerTest extends AndroidTestCase {
 
         assertEquals(1, allShoppingLists[0].Id);
     }
-
-    // TODO Create asserts for test if db is updated
 }
