@@ -423,7 +423,7 @@ public class ModelManager {
                 ContentValues updatedItem = new ContentValues();
                 updatedItem.put("shoppinglist_id", _shoppingListToUpdate.Id);
                 updatedItem.put("product_id", _shoppingListToUpdate.ListEntries.keyAt(currentProduct));
-                updatedItem.put("value", _shoppingListToUpdate.ListEntries.valueAt(currentProduct).floatValue());
+                updatedItem.put("value", _shoppingListToUpdate.ListEntries.valueAt(currentProduct));
                 _db.insertOrThrow("ProductsInShoppingLists", null, updatedItem);
             }
             _db.setTransactionSuccessful();

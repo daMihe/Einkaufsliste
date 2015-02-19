@@ -1,7 +1,6 @@
 package org.noorganization.shoppinglist.model;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.AvoidXfermode;
 import android.test.AndroidTestCase;
 
 public class ModelManagerTest extends AndroidTestCase {
