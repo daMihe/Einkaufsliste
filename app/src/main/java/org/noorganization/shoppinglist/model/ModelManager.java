@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Created by michi on 12.02.15.
+ * For license information, look into LICENSE-file located a project's root.
+ * This file is part of Einkaufsliste.
  */
 public class ModelManager {
 
@@ -24,8 +25,8 @@ public class ModelManager {
 
     /**
      * Creates a new Product and registers it.
-     * @param _title A name for the Product. null is not allowed (asserted).
-     * @param _defaultValue
+     * @param _title A name for the Product. null is not allowed
+     * @param _defaultValue The default value when adding to a shopping list.
      * @param _unitId The id of the referencing Unit returned by {@link Unit#Id}. {@link #INVALID_ID} is also allowed
      *                and means something like "this product should have no unit".
      * @return The created Product.
@@ -52,7 +53,7 @@ public class ModelManager {
      */
     public static ShoppingList createShoppingList(String _title) {
         if (m_sAllLists == null) {
-            m_sAllLists = new ArrayList<ShoppingList>();
+            m_sAllLists = new ArrayList<>();
         }
 
         ShoppingList newList = new ShoppingList();
@@ -70,7 +71,7 @@ public class ModelManager {
      */
     public static Unit createUnit(String _unitText) {
         if (m_sAllUnits == null) {
-            m_sAllUnits = new ArrayList<Unit>();
+            m_sAllUnits = new ArrayList<>();
         }
 
         Unit newUnit = new Unit();
@@ -106,8 +107,20 @@ public class ModelManager {
         }
     }
 
+    /**
+     * Opens or creates a database in this context with the specified name.
+     * @param _context Null is not allowed.
+     * @param _name Null is not allowed.
+     * @return The open database. It's writable and can be used for all model-modifying methods.
+     */
     public static SQLiteDatabase openAndReadDatabase(Context _context, String _name) {
-        DBOpenHelper databaseHelper = new DBOpenHelper(_context, _name, null, DBOpenHelper.CURRENT_DATABASE_VERSION);
+
+        String realFilename = _name;
+        if (!realFilename.endsWith(".db")) {
+            realFilename = realFilename.concat(".db");
+        }
+
+        DBOpenHelper databaseHelper = new DBOpenHelper(_context, realFilename, null, DBOpenHelper.CURRENT_DATABASE_VERSION);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
 
         if (m_sAllUnits == null) {
@@ -187,6 +200,10 @@ public class ModelManager {
         return db;
     }
 
+    /**
+     * @return A list with copies of all Products. The array is not sorted. null wont be returned even if no Products
+     * are loaded.
+     */
     public static Product[] getAllProducts() {
         if (m_sAllProducts == null || m_sAllProducts.size() == 0) {
             return new Product[0];
@@ -201,6 +218,10 @@ public class ModelManager {
         return rtn;
     }
 
+    /**
+     * @return A list with copies of all Units. The array is not sorted. null wont be returned even if no Units are
+     * loaded.
+     */
     public static Unit[] getAllUnits() {
         if (m_sAllUnits == null || m_sAllUnits.size() == 0) {
             return new Unit[0];
@@ -215,6 +236,9 @@ public class ModelManager {
         return rtn;
     }
 
+    /**
+     * @return A list of all ShoppingLists (as copies). Never null. Not sorted.
+     */
     public static ShoppingList[] getAllShoppingLists() {
         if (m_sAllLists == null || m_sAllLists.size() == 0) {
             return new ShoppingList[0];
@@ -229,6 +253,10 @@ public class ModelManager {
         return rtn;
     }
 
+    /**
+     * @param _id Internal id of Product. If {@link #INVALID_ID}, none will be found.
+     * @return A copy of the Product or null, if nothing found.
+     */
     public static Product getProductById(int _id) {
         if (_id == INVALID_ID || m_sAllProducts == null) {
             return null;
@@ -258,6 +286,10 @@ public class ModelManager {
         return null;
     }
 
+    /**
+     * @param _id Internal id of the list. If {@link #INVALID_ID}, none will be found.
+     * @return A copy of the ShoppingList or null, if nothing found.
+     */
     public static ShoppingList getShoppingListById(int _id) {
         if (_id == INVALID_ID || m_sAllLists == null) {
             return null;
