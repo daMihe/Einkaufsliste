@@ -237,4 +237,49 @@ public class ModelManagerTest extends AndroidTestCase {
 
         assertEquals(2.0f, ModelManager.getShoppingListById(1).ListEntries.get(1, Float.NaN), 0.001f);
     }
+
+    public void testDeleteUnit() throws Exception {
+        ModelManager.deleteUnit(ModelManager.getUnitById(1), m_currentConnection);
+
+        assertNull(ModelManager.getUnitById(1));
+        assertNull(ModelManager.getProductById(1));
+        assertEquals(0, ModelManager.getShoppingListById(1).ListEntries.size());
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+
+        assertNull(ModelManager.getUnitById(1));
+        assertNull(ModelManager.getProductById(1));
+        assertEquals(0, ModelManager.getShoppingListById(1).ListEntries.size());
+    }
+
+    public void testDeleteProduct() throws Exception {
+        ModelManager.deleteProduct(ModelManager.getProductById(1), m_currentConnection);
+
+        assertNotNull(ModelManager.getUnitById(1));
+        assertNull(ModelManager.getProductById(1));
+        assertEquals(0, ModelManager.getShoppingListById(1).ListEntries.size());
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+
+        assertNotNull(ModelManager.getUnitById(1));
+        assertNull(ModelManager.getProductById(1));
+        assertEquals(0, ModelManager.getShoppingListById(1).ListEntries.size());
+    }
+
+    public void testDeleteShoppingList() throws Exception {
+        ModelManager.deleteShoppingList(ModelManager.getShoppingListById(1), m_currentConnection);
+
+        assertNotNull(ModelManager.getUnitById(1));
+        assertNotNull(ModelManager.getProductById(1));
+        assertNull(ModelManager.getShoppingListById(1));
+
+        m_currentConnection.close();
+        m_currentConnection = ModelManager.openAndReadDatabase(getContext(), DB_NAME);
+
+        assertNotNull(ModelManager.getUnitById(1));
+        assertNotNull(ModelManager.getProductById(1));
+        assertNull(ModelManager.getShoppingListById(1));
+    }
 }

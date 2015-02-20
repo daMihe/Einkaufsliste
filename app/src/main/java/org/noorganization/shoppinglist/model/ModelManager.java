@@ -447,6 +447,18 @@ public class ModelManager {
         return true;
     }
 
+    public static void deleteUnit(Unit _unitToDelete, SQLiteDatabase _db) {
+
+    }
+
+    public static void deleteProduct(Product _productToDelete, SQLiteDatabase _db) {
+
+    }
+
+    public static void deleteShoppingList(ShoppingList _shoppingListToDelete, SQLiteDatabase _db) {
+
+    }
+
     static class DBOpenHelper extends SQLiteOpenHelper {
         public static final int CURRENT_DATABASE_VERSION = 1;
 
