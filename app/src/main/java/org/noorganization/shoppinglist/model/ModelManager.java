@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -35,6 +36,10 @@ public class ModelManager {
      * @return The created Product. Null if saving to database failed.
      */
     public static Product createProduct(String _title, float _defaultValue, int _unitId, SQLiteDatabase _db) {
+        if (_db == null || _title == null) {
+            throw new IllegalArgumentException("Title or database parameter was null.");
+        }
+
         if (m_sAllProducts == null) {
             m_sAllProducts = new ArrayList<>();
         }
@@ -67,6 +72,10 @@ public class ModelManager {
      * @return The constructed and registered ShoppingList, Or null if saving to database failed.
      */
     public static ShoppingList createShoppingList(String _title, SQLiteDatabase _db) {
+        if (_db == null || _title == null) {
+            throw new IllegalArgumentException("A parameter was not valid, because null is not allowed.");
+        }
+
         if (m_sAllLists == null) {
             m_sAllLists = new ArrayList<>();
         }
@@ -97,6 +106,10 @@ public class ModelManager {
      * @return The created and saved object or null if saving did not work.
      */
     public static Unit createUnit(String _unitText, SQLiteDatabase _db) {
+        if (_db == null || _unitText == null) {
+            throw new IllegalArgumentException("A parameter was null. This is not allowed.");
+        }
+
         if (m_sAllUnits == null) {
             m_sAllUnits = new ArrayList<>();
         }
@@ -152,6 +165,9 @@ public class ModelManager {
      * @return The open database. It's writable and can be used for all model-modifying methods.
      */
     public static SQLiteDatabase openAndReadDatabase(Context _context, String _name) {
+        if (_context == null || _name == null) {
+            throw new IllegalArgumentException("A parameter was null.");
+        }
 
         String realFilename = _name;
         if (!realFilename.endsWith(".db")) {
@@ -346,6 +362,10 @@ public class ModelManager {
      * @return Whether update succeeded.
      */
     public static boolean updateUnit(Unit _unitToUpdate, SQLiteDatabase _db) {
+        if (_db == null || _unitToUpdate == null || _unitToUpdate.UnitText == null) {
+            throw new IllegalArgumentException("A parameter was not valid.");
+        }
+
         if (m_sAllUnits == null || !idExists(_unitToUpdate.Id, m_sAllUnits.toArray(new Unit[m_sAllUnits.size()]))) {
             return false;
         }
@@ -373,6 +393,10 @@ public class ModelManager {
      * @return Whether update succeeded.
      */
     public static boolean updateProduct(Product _productToUpdate, SQLiteDatabase _db) {
+        if (_db == null || _productToUpdate == null || _productToUpdate.Title == null) {
+            throw new IllegalArgumentException("A parameter was not valid.");
+        }
+
         if (m_sAllProducts == null ||
                 !idExists(_productToUpdate.Id, m_sAllProducts.toArray(new Product[m_sAllProducts.size()]))) {
             return false;
@@ -404,6 +428,11 @@ public class ModelManager {
      * @return Whether update succeeded.
      */
     public static boolean updateShoppingList(ShoppingList _shoppingListToUpdate, SQLiteDatabase _db) {
+        if (_db == null || _shoppingListToUpdate == null || _shoppingListToUpdate.Title == null ||
+                _shoppingListToUpdate.ListEntries == null) {
+            throw new IllegalArgumentException("A parameter was null or not valid. This is not allowed.");
+        }
+
         if (m_sAllLists == null ||
                 !idExists(_shoppingListToUpdate.Id, m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]))) {
             return false;
@@ -447,16 +476,89 @@ public class ModelManager {
         return true;
     }
 
+    /**
+     * Deletes a Unit and all Product's that depend on it. Does not throw anything unless _db is null.
+     */
     public static void deleteUnit(Unit _unitToDelete, SQLiteDatabase _db) {
+        if (_db == null) {
+            throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
+        }
 
+        if (m_sAllUnits == null || m_sAllProducts == null || _unitToDelete == null) {
+            return;
+        }
+
+        LinkedList<Product> productsToDelete = new LinkedList<>();
+
+        for (Product currentProduct : m_sAllProducts) {
+            if (currentProduct.UnitId == _unitToDelete.Id) {
+                productsToDelete.addLast(currentProduct);
+            }
+        }
+
+        for (Product currentProductToDelete : productsToDelete) {
+            deleteProduct(currentProductToDelete, _db);
+        }
+
+        for (int currentUnitIndex = 0; currentUnitIndex < m_sAllUnits.size(); currentUnitIndex++) {
+            Unit currentUnit = m_sAllUnits.get(currentUnitIndex);
+            if (currentUnit.Id == _unitToDelete.Id) {
+                m_sAllUnits.remove(currentUnitIndex);
+                break;
+            }
+        }
+
+        _db.delete("Units", "id = ?", new String[]{ _unitToDelete.Id + "" });
     }
 
+    /**
+     * Removes the Product from all ShoppingList's and deletes it from database. Does not throw anything if both
+     * parameters are not null.
+     */
     public static void deleteProduct(Product _productToDelete, SQLiteDatabase _db) {
+        if (_db == null) {
+            throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
+        }
 
+        if (m_sAllProducts == null || m_sAllLists == null || _productToDelete == null) {
+            return;
+        }
+
+        for (ShoppingList currentList : m_sAllLists) {
+            currentList.ListEntries.delete(_productToDelete.Id);
+        }
+
+        for (int currentIndex = 0; currentIndex < m_sAllProducts.size(); currentIndex++) {
+            if (m_sAllProducts.get(currentIndex).Id == _productToDelete.Id) {
+                m_sAllProducts.remove(currentIndex);
+                break;
+            }
+        }
+
+        _db.delete("Products", "id = ?", new String[]{ _productToDelete.Id + "" });
     }
 
+    /**
+     * Deletes a ShoppingList. Does not throw anything if saving did not work or List was not found. Only throws if a
+     * parameter is null.
+     */
     public static void deleteShoppingList(ShoppingList _shoppingListToDelete, SQLiteDatabase _db) {
+        if (_db == null) {
+            throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
+        }
 
+        if (m_sAllLists == null || _shoppingListToDelete == null) {
+            return;
+        }
+
+        for (int currentIndex = 0; currentIndex < m_sAllLists.size(); currentIndex++) {
+            if (m_sAllLists.get(currentIndex).Id == _shoppingListToDelete.Id) {
+                m_sAllLists.remove(currentIndex);
+                break;
+            }
+        }
+
+        _db.delete("ShoppingLists", "id = ?", new String[]{  _shoppingListToDelete.Id + "" });
     }
 
     static class DBOpenHelper extends SQLiteOpenHelper {
