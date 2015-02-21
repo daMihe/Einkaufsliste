@@ -552,6 +552,17 @@ public class ModelManager {
         _db.delete("Products", "id = ?", new String[]{ _productToDelete.Id + "" });
     }
 
+    public static boolean loaded() {
+        return (m_sAllLists != null && m_sAllUnits != null && m_sAllProducts != null);
+    }
+
+    public static int getCountOfShoppingLists() {
+        if (m_sAllLists == null) {
+            return 0;
+        }
+        return m_sAllLists.size();
+    }
+
     /**
      * Deletes a ShoppingList. Does not throw anything if saving did not work or List was not found. Only throws if a
      * parameter is null.
