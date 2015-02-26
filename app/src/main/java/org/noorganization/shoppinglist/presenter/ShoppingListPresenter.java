@@ -29,23 +29,27 @@ public class ShoppingListPresenter {
     private ShoppingList      m_activeList;
     private SharedPreferences m_prefs;
     private Context           m_context;
+    private ModelManager      m_model;
 
-    public ShoppingListPresenter(Context _context) {
+    private static ShoppingListPresenter s_presenter;
+
+    private ShoppingListPresenter(Context _context) {
         m_context = _context;
         m_prefs = m_context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+        m_model = ModelManager.getInstance();
 
-        if (!ModelManager.loaded()) {
-            ModelManager.openAndReadDatabase(m_context, Constants.DATABASE_NAME);
+        if (!m_model.loaded()) {
+            m_model.openAndReadDatabase(m_context, Constants.DATABASE_NAME);
         }
 
         if (m_prefs.contains(Constants.SP_CURRENT_LIST_ID)) {
-            m_activeList = ModelManager.getShoppingListById(m_prefs.getInt(Constants.SP_CURRENT_LIST_ID, 0));
+            m_activeList = m_model.getShoppingListById(m_prefs.getInt(Constants.SP_CURRENT_LIST_ID, 0));
         }
         if (m_activeList == null) {
-            if (ModelManager.getCountOfShoppingLists() == 0) {
+            if (m_model.getCountOfShoppingLists() == 0) {
                 // TODO create list and load it then. maybe change activity?
             } else {
-                m_activeList = ModelManager.getAllShoppingLists()[0];
+                m_activeList = m_model.getAllShoppingLists()[0];
                 SharedPreferences.Editor editorForActiveList = m_prefs.edit();
                 editorForActiveList.putInt(Constants.SP_CURRENT_LIST_ID, m_activeList.Id);
             }
@@ -57,5 +61,13 @@ public class ShoppingListPresenter {
             return "";
         }
         return m_activeList.Title;
+    }
+
+    public static ShoppingListPresenter getInstance(Context _context) {
+        if (s_presenter == null) {
+            s_presenter = new ShoppingListPresenter(_context);
+        }
+
+        return s_presenter;
     }
 }

@@ -20,7 +20,6 @@ package org.noorganization.shoppinglist.view;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -29,13 +28,13 @@ import org.noorganization.shoppinglist.presenter.ShoppingListPresenter;
 
 public class ShoppingListActivity extends ActionBarActivity {
 
-    ShoppingListPresenter m_presenter;
+    private ShoppingListPresenter m_presenter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        m_presenter = new ShoppingListPresenter(this);
+        m_presenter = ShoppingListPresenter.getInstance(this);
 
         setContentView(R.layout.activity_shoppinglist);
     }

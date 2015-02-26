@@ -35,9 +35,11 @@ public class ModelManager {
 
     public static final int INVALID_ID = 0xFFFFFFFF;
 
-    static List<Product> m_sAllProducts;
-    static List<ShoppingList> m_sAllLists;
-    static List<Unit> m_sAllUnits;
+    List<Product> m_sAllProducts;
+    List<ShoppingList> m_sAllLists;
+    List<Unit> m_sAllUnits;
+
+    static ModelManager m_sInstance;
 
     /**
      * Creates a new Product and registers it. This method is does not throw anything if saving to database fails (see
@@ -49,7 +51,7 @@ public class ModelManager {
      * @param _db Open connection to a writable database.
      * @return The created Product. Null if saving to database failed.
      */
-    public static Product createProduct(String _title, float _defaultValue, int _unitId, SQLiteDatabase _db) {
+    public Product createProduct(String _title, float _defaultValue, int _unitId, SQLiteDatabase _db) {
         if (_db == null || _title == null) {
             throw new IllegalArgumentException("Title or database parameter was null.");
         }
@@ -85,7 +87,7 @@ public class ModelManager {
      * @param _db Open connection to a writable database.
      * @return The constructed and registered ShoppingList, Or null if saving to database failed.
      */
-    public static ShoppingList createShoppingList(String _title, SQLiteDatabase _db) {
+    public ShoppingList createShoppingList(String _title, SQLiteDatabase _db) {
         if (_db == null || _title == null) {
             throw new IllegalArgumentException("A parameter was not valid, because null is not allowed.");
         }
@@ -119,7 +121,7 @@ public class ModelManager {
      * @param _db Open connection to a writable database.
      * @return The created and saved object or null if saving did not work.
      */
-    public static Unit createUnit(String _unitText, SQLiteDatabase _db) {
+    public Unit createUnit(String _unitText, SQLiteDatabase _db) {
         if (_db == null || _unitText == null) {
             throw new IllegalArgumentException("A parameter was null. This is not allowed.");
         }
@@ -178,7 +180,7 @@ public class ModelManager {
      * @param _name Null is not allowed.
      * @return The open database. It's writable and can be used for all model-modifying methods.
      */
-    public static SQLiteDatabase openAndReadDatabase(Context _context, String _name) {
+    public SQLiteDatabase openAndReadDatabase(Context _context, String _name) {
         if (_context == null || _name == null) {
             throw new IllegalArgumentException("A parameter was null.");
         }
@@ -272,7 +274,7 @@ public class ModelManager {
      * @return A list with copies of all Products. The array is not sorted. null wont be returned even if no Products
      * are loaded.
      */
-    public static Product[] getAllProducts() {
+    public Product[] getAllProducts() {
         if (m_sAllProducts == null || m_sAllProducts.size() == 0) {
             return new Product[0];
         }
@@ -290,7 +292,7 @@ public class ModelManager {
      * @return A list with copies of all Units. The array is not sorted. null wont be returned even if no Units are
      * loaded.
      */
-    public static Unit[] getAllUnits() {
+    public Unit[] getAllUnits() {
         if (m_sAllUnits == null || m_sAllUnits.size() == 0) {
             return new Unit[0];
         }
@@ -307,7 +309,7 @@ public class ModelManager {
     /**
      * @return A list of all ShoppingLists (as copies). Never null. Not sorted.
      */
-    public static ShoppingList[] getAllShoppingLists() {
+    public ShoppingList[] getAllShoppingLists() {
         if (m_sAllLists == null || m_sAllLists.size() == 0) {
             return new ShoppingList[0];
         }
@@ -325,7 +327,7 @@ public class ModelManager {
      * @param _id Internal id of Product. If {@link #INVALID_ID}, none will be found.
      * @return A copy of the Product or null, if nothing found.
      */
-    public static Product getProductById(int _id) {
+    public Product getProductById(int _id) {
         if (_id == INVALID_ID || m_sAllProducts == null) {
             return null;
         }
@@ -342,7 +344,7 @@ public class ModelManager {
      * @param _id The internal id of the unit. If {@link #INVALID_ID} is provided, no object will be found.
      * @return A Unit if found or null if no Unit was found.
      */
-    public static Unit getUnitById(int _id) {
+    public Unit getUnitById(int _id) {
         if (_id == INVALID_ID || m_sAllUnits == null) {
             return null;
         }
@@ -358,7 +360,7 @@ public class ModelManager {
      * @param _id Internal id of the list. If {@link #INVALID_ID}, none will be found.
      * @return A copy of the ShoppingList or null, if nothing found.
      */
-    public static ShoppingList getShoppingListById(int _id) {
+    public ShoppingList getShoppingListById(int _id) {
         if (_id == INVALID_ID || m_sAllLists == null) {
             return null;
         }
@@ -375,7 +377,7 @@ public class ModelManager {
      * @param _db Open connection to a writable database.
      * @return Whether update succeeded.
      */
-    public static boolean updateUnit(Unit _unitToUpdate, SQLiteDatabase _db) {
+    public boolean updateUnit(Unit _unitToUpdate, SQLiteDatabase _db) {
         if (_db == null || _unitToUpdate == null || _unitToUpdate.UnitText == null) {
             throw new IllegalArgumentException("A parameter was not valid.");
         }
@@ -406,7 +408,7 @@ public class ModelManager {
      * @param _db An open connection to a writable database.
      * @return Whether update succeeded.
      */
-    public static boolean updateProduct(Product _productToUpdate, SQLiteDatabase _db) {
+    public boolean updateProduct(Product _productToUpdate, SQLiteDatabase _db) {
         if (_db == null || _productToUpdate == null || _productToUpdate.Title == null) {
             throw new IllegalArgumentException("A parameter was not valid.");
         }
@@ -441,7 +443,7 @@ public class ModelManager {
      * @param _db An open connection to a writable database.
      * @return Whether update succeeded.
      */
-    public static boolean updateShoppingList(ShoppingList _shoppingListToUpdate, SQLiteDatabase _db) {
+    public boolean updateShoppingList(ShoppingList _shoppingListToUpdate, SQLiteDatabase _db) {
         if (_db == null || _shoppingListToUpdate == null || _shoppingListToUpdate.Title == null ||
                 _shoppingListToUpdate.ListEntries == null) {
             throw new IllegalArgumentException("A parameter was null or not valid. This is not allowed.");
@@ -493,7 +495,7 @@ public class ModelManager {
     /**
      * Deletes a Unit and all Product's that depend on it. Does not throw anything unless _db is null.
      */
-    public static void deleteUnit(Unit _unitToDelete, SQLiteDatabase _db) {
+    public void deleteUnit(Unit _unitToDelete, SQLiteDatabase _db) {
         if (_db == null) {
             throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
         }
@@ -529,7 +531,7 @@ public class ModelManager {
      * Removes the Product from all ShoppingList's and deletes it from database. Does not throw anything if both
      * parameters are not null.
      */
-    public static void deleteProduct(Product _productToDelete, SQLiteDatabase _db) {
+    public void deleteProduct(Product _productToDelete, SQLiteDatabase _db) {
         if (_db == null) {
             throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
         }
@@ -552,11 +554,11 @@ public class ModelManager {
         _db.delete("Products", "id = ?", new String[]{ _productToDelete.Id + "" });
     }
 
-    public static boolean loaded() {
+    public boolean loaded() {
         return (m_sAllLists != null && m_sAllUnits != null && m_sAllProducts != null);
     }
 
-    public static int getCountOfShoppingLists() {
+    public int getCountOfShoppingLists() {
         if (m_sAllLists == null) {
             return 0;
         }
@@ -567,7 +569,7 @@ public class ModelManager {
      * Deletes a ShoppingList. Does not throw anything if saving did not work or List was not found. Only throws if a
      * parameter is null.
      */
-    public static void deleteShoppingList(ShoppingList _shoppingListToDelete, SQLiteDatabase _db) {
+    public void deleteShoppingList(ShoppingList _shoppingListToDelete, SQLiteDatabase _db) {
         if (_db == null) {
             throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
         }
@@ -633,5 +635,13 @@ public class ModelManager {
         public void onConfigure(SQLiteDatabase _db) {
             _db.rawQuery("PRAGMA foreign_keys = ON", new String[0]);
         }
+    }
+
+    public static ModelManager getInstance() {
+        if (m_sInstance == null) {
+            m_sInstance = new ModelManager();
+        }
+
+        return m_sInstance;
     }
 }
