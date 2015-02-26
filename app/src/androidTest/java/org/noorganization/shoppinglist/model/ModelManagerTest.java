@@ -56,32 +56,32 @@ public class ModelManagerTest extends AndroidTestCase {
 
         ModelManager modelManager = ModelManager.getInstance();
 
-        assertEquals(1, modelManager.m_sAllLists.size());
-        assertEquals(1, modelManager.m_sAllProducts.size());
-        assertEquals(1, modelManager.m_sAllUnits.size());
+        assertEquals(1, modelManager.m_allLists.size());
+        assertEquals(1, modelManager.m_allProducts.size());
+        assertEquals(1, modelManager.m_allUnits.size());
 
-        Product testProduct = modelManager.m_sAllProducts.get(0);
+        Product testProduct = modelManager.m_allProducts.get(0);
         assertEquals("Reis", testProduct.Title);
         assertEquals(1.0f, testProduct.DefaultValue, 0.01f);
         assertEquals(1, testProduct.UnitId);
         assertEquals(1, testProduct.Id);
 
-        ShoppingList testList = modelManager.m_sAllLists.get(0);
+        ShoppingList testList = modelManager.m_allLists.get(0);
         assertEquals(1, testList.Id);
         assertEquals("Meine Einkaufsliste", testList.Title);
         assertEquals(1, testList.ListEntries.size());
         assertEquals(2.0f, testList.ListEntries.get(1), 0.01f);
 
-        Unit testUnit = modelManager.m_sAllUnits.get(0);
+        Unit testUnit = modelManager.m_allUnits.get(0);
         assertEquals("kg", testUnit.UnitText);
         assertEquals(1, testUnit.Id);
 
         m_currentConnection.close();
         m_currentConnection = modelManager.openAndReadDatabase(getContext(), DB_NAME);
 
-        assertEquals(1, modelManager.m_sAllLists.size());
-        assertEquals(1, modelManager.m_sAllProducts.size());
-        assertEquals(1, modelManager.m_sAllUnits.size());
+        assertEquals(1, modelManager.m_allLists.size());
+        assertEquals(1, modelManager.m_allProducts.size());
+        assertEquals(1, modelManager.m_allUnits.size());
     }
 
     public void testCreateUnit() throws Exception {
@@ -97,10 +97,10 @@ public class ModelManagerTest extends AndroidTestCase {
         assertTrue(ModelManager.INVALID_ID != testUnit.Id);
         assertNotSame(testUnitForId, testUnit);
 
-        assertEquals(2, modelManager.m_sAllUnits.size());
+        assertEquals(2, modelManager.m_allUnits.size());
         m_currentConnection.close();
         m_currentConnection = modelManager.openAndReadDatabase(getContext(), DB_NAME);
-        assertEquals(2, modelManager.m_sAllUnits.size());
+        assertEquals(2, modelManager.m_allUnits.size());
     }
 
     public void testGetUnitById() throws Exception {
@@ -108,7 +108,7 @@ public class ModelManagerTest extends AndroidTestCase {
 
         Unit positiveUnit = modelManager.getUnitById(1);
         assertEquals("kg", positiveUnit.UnitText);
-        assertNotSame(positiveUnit, modelManager.m_sAllUnits.get(0));
+        assertNotSame(positiveUnit, modelManager.m_allUnits.get(0));
 
         assertNull(modelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(modelManager.getUnitById(725));
@@ -121,7 +121,7 @@ public class ModelManagerTest extends AndroidTestCase {
 
         assertNotNull(allUnits);
         assertEquals(1, allUnits.length);
-        assertNotSame(modelManager.m_sAllUnits.get(0), allUnits[0]);
+        assertNotSame(modelManager.m_allUnits.get(0), allUnits[0]);
 
         assertEquals(1, allUnits[0].Id);
     }
@@ -145,10 +145,10 @@ public class ModelManagerTest extends AndroidTestCase {
 
         assertNotSame(testProduct, testProductForId);
 
-        assertEquals(2, modelManager.m_sAllProducts.size());
+        assertEquals(2, modelManager.m_allProducts.size());
         m_currentConnection.close();
         m_currentConnection = modelManager.openAndReadDatabase(getContext(), DB_NAME);
-        assertEquals(2, modelManager.m_sAllProducts.size());
+        assertEquals(2, modelManager.m_allProducts.size());
     }
 
     public void testGetProductById() throws Exception {
@@ -159,7 +159,7 @@ public class ModelManagerTest extends AndroidTestCase {
         assertEquals(1.0f, positiveProduct.DefaultValue, 0.001f);
         assertEquals(1, positiveProduct.UnitId);
         assertEquals(1, positiveProduct.Id);
-        assertNotSame(positiveProduct, modelManager.m_sAllProducts.get(0));
+        assertNotSame(positiveProduct, modelManager.m_allProducts.get(0));
 
         assertNull(modelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(modelManager.getUnitById(725));
@@ -172,7 +172,7 @@ public class ModelManagerTest extends AndroidTestCase {
 
         assertNotNull(allProducts);
         assertEquals(1, allProducts.length);
-        assertNotSame(modelManager.m_sAllProducts.get(0), allProducts[0]);
+        assertNotSame(modelManager.m_allProducts.get(0), allProducts[0]);
 
         assertEquals(1, allProducts[0].Id);
     }
@@ -193,10 +193,10 @@ public class ModelManagerTest extends AndroidTestCase {
         assertNotNull(testShoppingList.ListEntries);
         assertEquals(0, testShoppingList.ListEntries.size());
 
-        assertEquals(2, modelManager.m_sAllLists.size());
+        assertEquals(2, modelManager.m_allLists.size());
         m_currentConnection.close();
         m_currentConnection = modelManager.openAndReadDatabase(getContext(), DB_NAME);
-        assertEquals(2, modelManager.m_sAllLists.size());
+        assertEquals(2, modelManager.m_allLists.size());
     }
 
     public void testGetShoppingListById() throws Exception {
@@ -208,7 +208,7 @@ public class ModelManagerTest extends AndroidTestCase {
         assertNotNull(positiveShoppingList.ListEntries);
         assertEquals(1, positiveShoppingList.ListEntries.keyAt(0));
         assertEquals(2.0f, positiveShoppingList.ListEntries.valueAt(0).floatValue(), 0.001f);
-        assertNotSame(positiveShoppingList, modelManager.m_sAllLists.get(0));
+        assertNotSame(positiveShoppingList, modelManager.m_allLists.get(0));
 
         assertNull(modelManager.getUnitById(ModelManager.INVALID_ID));
         assertNull(modelManager.getUnitById(725));
@@ -221,7 +221,7 @@ public class ModelManagerTest extends AndroidTestCase {
 
         assertNotNull(allShoppingLists);
         assertEquals(1, allShoppingLists.length);
-        assertNotSame(modelManager.m_sAllLists.get(0), allShoppingLists[0]);
+        assertNotSame(modelManager.m_allLists.get(0), allShoppingLists[0]);
 
         assertEquals(1, allShoppingLists[0].Id);
     }

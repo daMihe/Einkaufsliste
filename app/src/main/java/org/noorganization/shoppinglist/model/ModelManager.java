@@ -26,7 +26,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.SystemClock;
 import android.util.SparseArray;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -35,11 +34,19 @@ public class ModelManager {
 
     public static final int INVALID_ID = 0xFFFFFFFF;
 
-    List<Product> m_sAllProducts;
-    List<ShoppingList> m_sAllLists;
-    List<Unit> m_sAllUnits;
+    List<Product>      m_allProducts;
+    List<ShoppingList> m_allLists;
+    List<Unit>         m_allUnits;
+    boolean            m_loaded;
 
     static ModelManager m_sInstance;
+
+    private ModelManager() {
+        m_allProducts = new LinkedList<>();
+        m_allLists    = new LinkedList<>();
+        m_allUnits    = new LinkedList<>();
+        m_loaded      = false;
+    }
 
     /**
      * Creates a new Product and registers it. This method is does not throw anything if saving to database fails (see
@@ -56,15 +63,11 @@ public class ModelManager {
             throw new IllegalArgumentException("Title or database parameter was null.");
         }
 
-        if (m_sAllProducts == null) {
-            m_sAllProducts = new ArrayList<>();
-        }
-
         Product newProduct = new Product();
         newProduct.Title        = _title;
         newProduct.DefaultValue = _defaultValue;
         newProduct.UnitId       = _unitId;
-        newProduct.Id           = generateId(m_sAllProducts.toArray(new Product[m_sAllProducts.size()]));
+        newProduct.Id           = generateId(m_allProducts.toArray(new Product[m_allProducts.size()]));
 
         ContentValues insertionValues = new ContentValues();
         insertionValues.put("title", _title);
@@ -75,7 +78,7 @@ public class ModelManager {
             return null;
         }
 
-        m_sAllProducts.add(newProduct);
+        m_allProducts.add(newProduct);
 
         return new Product(newProduct);
     }
@@ -92,13 +95,9 @@ public class ModelManager {
             throw new IllegalArgumentException("A parameter was not valid, because null is not allowed.");
         }
 
-        if (m_sAllLists == null) {
-            m_sAllLists = new ArrayList<>();
-        }
-
         ShoppingList newList = new ShoppingList();
         newList.Title       = _title;
-        newList.Id          = generateId(m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]));
+        newList.Id          = generateId(m_allLists.toArray(new ShoppingList[m_allLists.size()]));
         newList.ListEntries = new SparseArray<>();
 
 
@@ -109,7 +108,7 @@ public class ModelManager {
             return null;
         }
 
-        m_sAllLists.add(newList);
+        m_allLists.add(newList);
 
         return new ShoppingList(newList);
     }
@@ -126,13 +125,9 @@ public class ModelManager {
             throw new IllegalArgumentException("A parameter was null. This is not allowed.");
         }
 
-        if (m_sAllUnits == null) {
-            m_sAllUnits = new ArrayList<>();
-        }
-
         Unit newUnit = new Unit();
         newUnit.UnitText = _unitText;
-        newUnit.Id       = generateId(m_sAllUnits.toArray(new IdentificableModelObject[m_sAllUnits.size()]));
+        newUnit.Id       = generateId(m_allUnits.toArray(new IdentificableModelObject[m_allUnits.size()]));
 
 
         ContentValues insertionValues = new ContentValues();
@@ -142,7 +137,7 @@ public class ModelManager {
             return null;
         }
 
-        m_sAllUnits.add(newUnit);
+        m_allUnits.add(newUnit);
 
         return new Unit(newUnit);
     }
@@ -193,11 +188,7 @@ public class ModelManager {
         DBOpenHelper databaseHelper = new DBOpenHelper(_context, realFilename, null, DBOpenHelper.CURRENT_DATABASE_VERSION);
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
 
-        if (m_sAllUnits == null) {
-            m_sAllUnits = new ArrayList<>();
-        } else {
-            m_sAllUnits.clear();
-        }
+        m_allUnits.clear();
 
         Cursor allUnits = db.query("Units",
                 new String[]{ "id", "title" },
@@ -207,16 +198,12 @@ public class ModelManager {
             Unit existingUnit = new Unit();
             existingUnit.UnitText = allUnits.getString(allUnits.getColumnIndex("title"));
             existingUnit.Id       = allUnits.getInt(allUnits.getColumnIndex("id"));
-            m_sAllUnits.add(existingUnit);
+            m_allUnits.add(existingUnit);
             allUnits.moveToNext();
         }
         allUnits.close();
 
-        if (m_sAllProducts == null) {
-            m_sAllProducts = new ArrayList<>();
-        } else {
-            m_sAllProducts.clear();
-        }
+        m_allProducts.clear();
 
         Cursor allProducts = db.query("Products",
                 new String[]{ "id", "title", "defaultvalue", "unit_id" },
@@ -230,16 +217,12 @@ public class ModelManager {
             existingProduct.Id           = allProducts.getInt(allProducts.getColumnIndex("id"));
             existingProduct.UnitId       = (allProducts.isNull(indexOfUnitId) ?
                     INVALID_ID : allProducts.getInt(indexOfUnitId));
-            m_sAllProducts.add(existingProduct);
+            m_allProducts.add(existingProduct);
             allProducts.moveToNext();
         }
         allProducts.close();
 
-        if (m_sAllLists == null) {
-            m_sAllLists = new ArrayList<>();
-        } else {
-            m_sAllLists.clear();
-        }
+        m_allLists.clear();
 
         Cursor allLists = db.query("ShoppingLists",
                 new String[]{ "id", "title" },
@@ -262,10 +245,12 @@ public class ModelManager {
             }
             allItemsInList.close();
 
-            m_sAllLists.add(existingList);
+            m_allLists.add(existingList);
             allLists.moveToNext();
         }
         allLists.close();
+
+        m_loaded = true;
 
         return db;
     }
@@ -275,13 +260,13 @@ public class ModelManager {
      * are loaded.
      */
     public Product[] getAllProducts() {
-        if (m_sAllProducts == null || m_sAllProducts.size() == 0) {
+        if (m_allProducts.size() == 0) {
             return new Product[0];
         }
 
-        Product rtn[] = new Product[m_sAllProducts.size()];
+        Product rtn[] = new Product[m_allProducts.size()];
         int index = 0;
-        for (Product currentProduct : m_sAllProducts) {
+        for (Product currentProduct : m_allProducts) {
             rtn[index] = new Product(currentProduct);
             index++;
         }
@@ -293,13 +278,13 @@ public class ModelManager {
      * loaded.
      */
     public Unit[] getAllUnits() {
-        if (m_sAllUnits == null || m_sAllUnits.size() == 0) {
+        if (m_allUnits.size() == 0) {
             return new Unit[0];
         }
 
-        Unit rtn[] = new Unit[m_sAllUnits.size()];
+        Unit rtn[] = new Unit[m_allUnits.size()];
         int index = 0;
-        for (Unit currentUnit : m_sAllUnits) {
+        for (Unit currentUnit : m_allUnits) {
             rtn[index] = new Unit(currentUnit);
             index++;
         }
@@ -310,13 +295,13 @@ public class ModelManager {
      * @return A list of all ShoppingLists (as copies). Never null. Not sorted.
      */
     public ShoppingList[] getAllShoppingLists() {
-        if (m_sAllLists == null || m_sAllLists.size() == 0) {
+        if (m_allLists.size() == 0) {
             return new ShoppingList[0];
         }
 
-        ShoppingList rtn[] = new ShoppingList[m_sAllLists.size()];
+        ShoppingList rtn[] = new ShoppingList[m_allLists.size()];
         int index = 0;
-        for (ShoppingList currentList : m_sAllLists) {
+        for (ShoppingList currentList : m_allLists) {
             rtn[index] = new ShoppingList(currentList);
             index++;
         }
@@ -328,10 +313,10 @@ public class ModelManager {
      * @return A copy of the Product or null, if nothing found.
      */
     public Product getProductById(int _id) {
-        if (_id == INVALID_ID || m_sAllProducts == null) {
+        if (_id == INVALID_ID) {
             return null;
         }
-        for (Product currentProduct : m_sAllProducts) {
+        for (Product currentProduct : m_allProducts) {
             if (currentProduct.Id == _id) {
                 return new Product(currentProduct);
             }
@@ -345,10 +330,10 @@ public class ModelManager {
      * @return A Unit if found or null if no Unit was found.
      */
     public Unit getUnitById(int _id) {
-        if (_id == INVALID_ID || m_sAllUnits == null) {
+        if (_id == INVALID_ID) {
             return null;
         }
-        for (Unit CurrentUnit : m_sAllUnits) {
+        for (Unit CurrentUnit : m_allUnits) {
             if (CurrentUnit.Id == _id) {
                 return new Unit(CurrentUnit);
             }
@@ -361,10 +346,10 @@ public class ModelManager {
      * @return A copy of the ShoppingList or null, if nothing found.
      */
     public ShoppingList getShoppingListById(int _id) {
-        if (_id == INVALID_ID || m_sAllLists == null) {
+        if (_id == INVALID_ID) {
             return null;
         }
-        for (ShoppingList currentList : m_sAllLists) {
+        for (ShoppingList currentList : m_allLists) {
             if (currentList.Id == _id) {
                 return new ShoppingList(currentList);
             }
@@ -382,7 +367,7 @@ public class ModelManager {
             throw new IllegalArgumentException("A parameter was not valid.");
         }
 
-        if (m_sAllUnits == null || !idExists(_unitToUpdate.Id, m_sAllUnits.toArray(new Unit[m_sAllUnits.size()]))) {
+        if (!idExists(_unitToUpdate.Id, m_allUnits.toArray(new Unit[m_allUnits.size()]))) {
             return false;
         }
 
@@ -392,9 +377,9 @@ public class ModelManager {
             return false;
         }
 
-        for (int currentIndex = 0; currentIndex < m_sAllUnits.size(); currentIndex++) {
-            if (m_sAllUnits.get(currentIndex).Id == _unitToUpdate.Id) {
-                m_sAllUnits.set(currentIndex, new Unit(_unitToUpdate));
+        for (int currentIndex = 0; currentIndex < m_allUnits.size(); currentIndex++) {
+            if (m_allUnits.get(currentIndex).Id == _unitToUpdate.Id) {
+                m_allUnits.set(currentIndex, new Unit(_unitToUpdate));
             }
         }
 
@@ -413,8 +398,7 @@ public class ModelManager {
             throw new IllegalArgumentException("A parameter was not valid.");
         }
 
-        if (m_sAllProducts == null ||
-                !idExists(_productToUpdate.Id, m_sAllProducts.toArray(new Product[m_sAllProducts.size()]))) {
+        if (!idExists(_productToUpdate.Id, m_allProducts.toArray(new Product[m_allProducts.size()]))) {
             return false;
         }
 
@@ -426,9 +410,9 @@ public class ModelManager {
             return false;
         }
 
-        for (int currentIndex = 0; currentIndex < m_sAllProducts.size(); currentIndex++) {
-            if (m_sAllProducts.get(currentIndex).Id == _productToUpdate.Id) {
-                m_sAllProducts.set(currentIndex, new Product(_productToUpdate));
+        for (int currentIndex = 0; currentIndex < m_allProducts.size(); currentIndex++) {
+            if (m_allProducts.get(currentIndex).Id == _productToUpdate.Id) {
+                m_allProducts.set(currentIndex, new Product(_productToUpdate));
                 break;
             }
         }
@@ -449,8 +433,7 @@ public class ModelManager {
             throw new IllegalArgumentException("A parameter was null or not valid. This is not allowed.");
         }
 
-        if (m_sAllLists == null ||
-                !idExists(_shoppingListToUpdate.Id, m_sAllLists.toArray(new ShoppingList[m_sAllLists.size()]))) {
+        if (!idExists(_shoppingListToUpdate.Id, m_allLists.toArray(new ShoppingList[m_allLists.size()]))) {
             return false;
         }
 
@@ -482,9 +465,9 @@ public class ModelManager {
             return false;
         }
 
-        for (int currentListIndex = 0; currentListIndex < m_sAllLists.size(); currentListIndex++) {
-            if (m_sAllLists.get(currentListIndex).Id == _shoppingListToUpdate.Id) {
-                m_sAllLists.set(currentListIndex, new ShoppingList(_shoppingListToUpdate));
+        for (int currentListIndex = 0; currentListIndex < m_allLists.size(); currentListIndex++) {
+            if (m_allLists.get(currentListIndex).Id == _shoppingListToUpdate.Id) {
+                m_allLists.set(currentListIndex, new ShoppingList(_shoppingListToUpdate));
                 break;
             }
         }
@@ -500,13 +483,13 @@ public class ModelManager {
             throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
         }
 
-        if (m_sAllUnits == null || m_sAllProducts == null || _unitToDelete == null) {
+        if (_unitToDelete == null) {
             return;
         }
 
         LinkedList<Product> productsToDelete = new LinkedList<>();
 
-        for (Product currentProduct : m_sAllProducts) {
+        for (Product currentProduct : m_allProducts) {
             if (currentProduct.UnitId == _unitToDelete.Id) {
                 productsToDelete.addLast(currentProduct);
             }
@@ -516,10 +499,10 @@ public class ModelManager {
             deleteProduct(currentProductToDelete, _db);
         }
 
-        for (int currentUnitIndex = 0; currentUnitIndex < m_sAllUnits.size(); currentUnitIndex++) {
-            Unit currentUnit = m_sAllUnits.get(currentUnitIndex);
+        for (int currentUnitIndex = 0; currentUnitIndex < m_allUnits.size(); currentUnitIndex++) {
+            Unit currentUnit = m_allUnits.get(currentUnitIndex);
             if (currentUnit.Id == _unitToDelete.Id) {
-                m_sAllUnits.remove(currentUnitIndex);
+                m_allUnits.remove(currentUnitIndex);
                 break;
             }
         }
@@ -536,17 +519,17 @@ public class ModelManager {
             throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
         }
 
-        if (m_sAllProducts == null || m_sAllLists == null || _productToDelete == null) {
+        if (_productToDelete == null) {
             return;
         }
 
-        for (ShoppingList currentList : m_sAllLists) {
+        for (ShoppingList currentList : m_allLists) {
             currentList.ListEntries.delete(_productToDelete.Id);
         }
 
-        for (int currentIndex = 0; currentIndex < m_sAllProducts.size(); currentIndex++) {
-            if (m_sAllProducts.get(currentIndex).Id == _productToDelete.Id) {
-                m_sAllProducts.remove(currentIndex);
+        for (int currentIndex = 0; currentIndex < m_allProducts.size(); currentIndex++) {
+            if (m_allProducts.get(currentIndex).Id == _productToDelete.Id) {
+                m_allProducts.remove(currentIndex);
                 break;
             }
         }
@@ -555,14 +538,11 @@ public class ModelManager {
     }
 
     public boolean loaded() {
-        return (m_sAllLists != null && m_sAllUnits != null && m_sAllProducts != null);
+        return m_loaded;
     }
 
     public int getCountOfShoppingLists() {
-        if (m_sAllLists == null) {
-            return 0;
-        }
-        return m_sAllLists.size();
+        return m_allLists.size();
     }
 
     /**
@@ -574,13 +554,13 @@ public class ModelManager {
             throw new IllegalArgumentException("Database must be an open and writable SQLiteDatabase");
         }
 
-        if (m_sAllLists == null || _shoppingListToDelete == null) {
+        if (_shoppingListToDelete == null) {
             return;
         }
 
-        for (int currentIndex = 0; currentIndex < m_sAllLists.size(); currentIndex++) {
-            if (m_sAllLists.get(currentIndex).Id == _shoppingListToDelete.Id) {
-                m_sAllLists.remove(currentIndex);
+        for (int currentIndex = 0; currentIndex < m_allLists.size(); currentIndex++) {
+            if (m_allLists.get(currentIndex).Id == _shoppingListToDelete.Id) {
+                m_allLists.remove(currentIndex);
                 break;
             }
         }
