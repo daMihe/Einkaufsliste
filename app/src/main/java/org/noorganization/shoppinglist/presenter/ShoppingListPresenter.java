@@ -20,11 +20,12 @@ package org.noorganization.shoppinglist.presenter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.AvoidXfermode;
 import android.util.Log;
 
 import org.noorganization.shoppinglist.model.ModelManager;
 import org.noorganization.shoppinglist.model.ShoppingList;
+
+import java.util.HashMap;
 
 public class ShoppingListPresenter {
     private ShoppingList      m_activeList;
@@ -87,5 +88,42 @@ public class ShoppingListPresenter {
     static ShoppingListPresenter resetSingleton(Context _context, String _sharedPrefName, String _dbName) {
         s_presenter = null;
         return getInstance(_context, _sharedPrefName, _dbName);
+    }
+
+    public boolean createList(String _newListTitle) {
+        // TODO implement stub
+        return false;
+    }
+
+    public HashMap<String, Integer> getLists() {
+        // TODO implement stub
+        return null;
+    }
+
+    public void selectList(int _newList) {
+        // TODO implement stub
+    }
+
+    public HashMap<String, Integer> getActiveListEntries() {
+        // TODO implement stub
+        return null;
+    }
+
+    public HashMap<String, Integer> getInactiveListEntries() {
+        // TODO implement stub
+        return null;
+    }
+
+    public void deactivateListEntry(int _productToDeactivate) {
+        // TODO implement stub
+    }
+
+    public void activateListEntry(int _productToActivate, float _value) {
+        // TODO implement stub
+    }
+
+    public boolean deleteList(int _listToDelete) {
+        // TODO implement stub
+        return false;
     }
 }
