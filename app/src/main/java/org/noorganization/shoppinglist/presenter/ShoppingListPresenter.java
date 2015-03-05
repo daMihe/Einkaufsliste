@@ -20,18 +20,23 @@ package org.noorganization.shoppinglist.presenter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
+import android.database.sqlite.SQLiteDatabase;
 
 import org.noorganization.shoppinglist.model.ModelManager;
+import org.noorganization.shoppinglist.model.Product;
 import org.noorganization.shoppinglist.model.ShoppingList;
+import org.noorganization.shoppinglist.model.Unit;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class ShoppingListPresenter {
     private ShoppingList      m_activeList;
     private SharedPreferences m_prefs;
     private Context           m_context;
     private ModelManager      m_model;
+    private SQLiteDatabase    m_db;
 
     private static ShoppingListPresenter s_presenter;
 
@@ -41,20 +46,12 @@ public class ShoppingListPresenter {
         m_model = ModelManager.getInstance();
         m_activeList = null;
 
-        if (!m_model.loaded()) {
-            m_model.openAndReadDatabase(m_context, _dbName);
-        }
+        m_db = m_model.openAndReadDatabase(m_context, _dbName);
 
         if (m_prefs.contains(Constants.SP_CURRENT_LIST_ID)) {
             m_activeList = m_model.getShoppingListById(m_prefs.getInt(Constants.SP_CURRENT_LIST_ID, ModelManager.INVALID_ID));
-            if (m_activeList == null) {
-                Log.d("TAG", String.format("Got null for %08x", m_prefs.getInt(Constants.SP_CURRENT_LIST_ID, ModelManager.INVALID_ID)));
-            } else {
-                Log.d("TAG", String.format("Got a List for %08x: %s", m_activeList.Id, m_activeList.Title));
-            }
         }
         if (m_activeList == null && m_model.getCountOfShoppingLists() != 0) {
-            Log.d("TAG", "updated currentlist");
             m_activeList = new ShoppingList(m_model.getAllShoppingLists()[0]);
             SharedPreferences.Editor editorForActiveList = m_prefs.edit();
             editorForActiveList.putInt(Constants.SP_CURRENT_LIST_ID, m_activeList.Id);
@@ -90,40 +87,122 @@ public class ShoppingListPresenter {
         return getInstance(_context, _sharedPrefName, _dbName);
     }
 
+    /**
+     * Creates a list and selects it (for usability reasons).
+     * @param _newListTitle May not be null.
+     * @return Whether creating was successful.
+     */
     public boolean createList(String _newListTitle) {
-        // TODO implement stub
-        return false;
+        if (_newListTitle == null) {
+            return false;
+        }
+        for (ShoppingList listToCheck : m_model.getAllShoppingLists()) {
+            if (listToCheck.Title == _newListTitle) {
+                return false;
+            }
+        }
+
+        ShoppingList newList = m_model.createShoppingList(_newListTitle, m_db);
+        selectList(newList.Id);
+
+        return true;
     }
 
+    /**
+     * Creates a Map of list-titles to internal id's, that have to be used for writing operations.
+     * @return the created map. Never null.
+     */
     public HashMap<String, Integer> getLists() {
-        // TODO implement stub
-        return null;
+        HashMap<String, Integer> listMap = new HashMap<>();
+
+        for (ShoppingList currentListToMap : m_model.getAllShoppingLists()) {
+            listMap.put(currentListToMap.Title, currentListToMap.Id);
+        }
+
+        return listMap;
     }
 
     public void selectList(int _newList) {
-        // TODO implement stub
+        ShoppingList selectedList = m_model.getShoppingListById(_newList);
+        if (selectedList == null) {
+            return;
+        }
+
+        m_activeList = selectedList;
+        SharedPreferences.Editor prefEditor = m_prefs.edit();
+        prefEditor.putInt(Constants.SP_CURRENT_LIST_ID, m_activeList.Id);
+        prefEditor.apply();
     }
 
     public HashMap<String, Integer> getActiveListEntries() {
-        // TODO implement stub
-        return null;
+        if (m_activeList == null) {
+            return new HashMap<>();
+        }
+
+        HashMap<String, Integer> activeEntries = new HashMap<>();
+
+        for (int currentPosition = 0; currentPosition < m_activeList.ListEntries.size(); currentPosition++) {
+            Product currentProduct = m_model.getProductById(m_activeList.ListEntries.keyAt(currentPosition));
+            Unit currentUnit = m_model.getUnitById(currentProduct.UnitId);
+
+            String unitString = (currentUnit == null ? "" : currentUnit.UnitText);
+            float value = m_activeList.ListEntries.valueAt(currentPosition);
+            String entryString = currentProduct.Title;
+            if (value > 1.001f || value < 0.999f || !unitString.isEmpty()) {
+                entryString = new DecimalFormat("#.###").format(value) + unitString + " " + entryString;
+            }
+
+            activeEntries.put(entryString, currentProduct.Id);
+        }
+
+        return activeEntries;
     }
 
     public HashMap<String, Integer> getInactiveListEntries() {
-        // TODO implement stub
-        return null;
+
+        HashMap<String, Integer> inactiveEntries = new HashMap<>();
+        for (Product currentProduct : m_model.getAllProducts()) {
+            if (m_activeList == null || m_activeList.ListEntries.indexOfKey(currentProduct.Id) < 0) {
+                inactiveEntries.put(currentProduct.Title, currentProduct.Id);
+            }
+        }
+
+        return inactiveEntries;
     }
 
     public void deactivateListEntry(int _productToDeactivate) {
-        // TODO implement stub
+        if (m_activeList != null) {
+            m_activeList.ListEntries.remove(_productToDeactivate);
+            if (!m_model.updateShoppingList(m_activeList, m_db)) {
+                m_activeList = m_model.getShoppingListById(m_activeList.Id);
+            }
+        }
     }
 
     public void activateListEntry(int _productToActivate, float _value) {
-        // TODO implement stub
+        if (m_model.getProductById(_productToActivate) != null && _value > 0.0f && m_activeList != null) {
+            m_activeList.ListEntries.put(_productToActivate, _value);
+            if (!m_model.updateShoppingList(m_activeList, m_db)) {
+                m_activeList = m_model.getShoppingListById(m_activeList.Id);
+            }
+        }
     }
 
     public boolean deleteList(int _listToDelete) {
-        // TODO implement stub
-        return false;
+        if (m_activeList != null && m_activeList.Id == _listToDelete) {
+            if (m_model.getCountOfShoppingLists() == 1) {
+                return false;
+            }
+
+            m_model.deleteShoppingList(m_activeList, m_db);
+            selectList(m_model.getAllShoppingLists()[0].Id);
+        } else {
+            ShoppingList toDelete = m_model.getShoppingListById(_listToDelete);
+            if (toDelete != null) {
+                m_model.deleteShoppingList(toDelete, m_db);
+            }
+        }
+
+        return true;
     }
 }
