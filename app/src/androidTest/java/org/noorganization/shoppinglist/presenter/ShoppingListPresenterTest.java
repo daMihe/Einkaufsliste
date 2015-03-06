@@ -176,12 +176,35 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
         assertTrue(testList.ListEntries.indexOfKey(testProductInactive.Id) < 0);
     }
 
-    public void testGetEditInformationForEntry() throws Exception {
-        fail("Test implementation missing.");
+    public void testEditListEntry() throws Exception {
+        Product testProduct = m_model.createProduct("Activate Product", 1.0f, ModelManager.INVALID_ID,
+                m_modelConnection);
+        Product testProduct2 = m_model.createProduct("Activate Product2", 1.0f, ModelManager.INVALID_ID,
+                m_modelConnection);
+        ShoppingList testList = m_model.createShoppingList("List 1", m_modelConnection);
+        testList.ListEntries.put(testProduct.Id, 2.0f);
+        testList.ListEntries.put(testProduct2.Id, 2.0f);
+        m_presenter.selectList(testList.Id);
+
+        m_presenter.editListEntry(testProduct.Id, 5.0f);
+
+        testList = m_model.getShoppingListById(testList.Id);
+        assertEquals(5.0f, testList.ListEntries.get(testProduct.Id, Float.NaN));
+        assertEquals(2.0f, testList.ListEntries.get(testProduct2.Id, Float.NaN));
     }
 
-    public void testEditListEntry() throws Exception {
-        fail("Test implementation missing.");
+    public void testGetValueOfEntry() throws Exception {
+        Product testProduct1 = m_model.createProduct("Activate Product1", 1.0f, ModelManager.INVALID_ID,
+                m_modelConnection);
+        Product testProduct2 = m_model.createProduct("Activate Product2", 1.0f, ModelManager.INVALID_ID,
+                m_modelConnection);
+        ShoppingList testList = m_model.createShoppingList("List 1", m_modelConnection);
+        testList.ListEntries.put(testProduct1.Id, 2.0f);
+        testList.ListEntries.put(testProduct2.Id, 7.0f);
+        m_presenter.selectList(testList.Id);
+
+        assertEquals(2.0f, m_presenter.getValueOfEntry(testProduct1.Id), 0.001f);
+
     }
 
     public void testDeleteList() throws Exception {

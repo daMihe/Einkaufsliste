@@ -205,4 +205,13 @@ public class ShoppingListPresenter {
 
         return true;
     }
+
+    public void editListEntry(int _listEntryId, float _newValue) {
+        // TODO implement stub
+    }
+
+    public float getValueOfEntry(int _listEntryId) {
+        // TODO implement stub
+        return 0.0f;
+    }
 }
