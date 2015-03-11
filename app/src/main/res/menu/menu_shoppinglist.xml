@@ -19,7 +19,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="org.noorganization.shoppinglist.view.ShoppingListActivity">
+      tools:context="org.noorganization.shoppinglist.view.MainActivity">
+    <item android:id="@+id/action_create_list"
+          android:title="@string/create_shopping_list" />
     <item android:id="@+id/action_settings"
           android:title="@string/action_settings"
           android:orderInCategory="100"
