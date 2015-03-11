@@ -29,24 +29,23 @@ import org.noorganization.shoppinglist.model.Unit;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.Locale;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class ShoppingListPresenter {
     private ShoppingList      m_activeList;
     private SharedPreferences m_prefs;
-    private Context           m_context;
     private ModelManager      m_model;
     private SQLiteDatabase    m_db;
 
     private static ShoppingListPresenter s_presenter;
 
     private ShoppingListPresenter(Context _context, String _sharedPrefName, String _dbName) {
-        m_context = _context;
-        m_prefs = m_context.getSharedPreferences(_sharedPrefName, Context.MODE_PRIVATE);
+        m_prefs = _context.getSharedPreferences(_sharedPrefName, Context.MODE_PRIVATE);
         m_model = ModelManager.getInstance();
         m_activeList = null;
 
-        m_db = m_model.openAndReadDatabase(m_context, _dbName);
+        m_db = m_model.openAndReadDatabase(_context, _dbName);
 
         if (m_prefs.contains(Constants.SP_CURRENT_LIST_ID)) {
             m_activeList = m_model.getShoppingListById(m_prefs.getInt(Constants.SP_CURRENT_LIST_ID, ModelManager.INVALID_ID));
@@ -55,7 +54,7 @@ public class ShoppingListPresenter {
             m_activeList = new ShoppingList(m_model.getAllShoppingLists()[0]);
             SharedPreferences.Editor editorForActiveList = m_prefs.edit();
             editorForActiveList.putInt(Constants.SP_CURRENT_LIST_ID, m_activeList.Id);
-            editorForActiveList.commit();
+            editorForActiveList.apply();
         }
     }
 
@@ -97,7 +96,7 @@ public class ShoppingListPresenter {
             return false;
         }
         for (ShoppingList listToCheck : m_model.getAllShoppingLists()) {
-            if (listToCheck.Title == _newListTitle) {
+            if (listToCheck.Title.equals(_newListTitle)) {
                 return false;
             }
         }
@@ -112,8 +111,8 @@ public class ShoppingListPresenter {
      * Creates a Map of list-titles to internal id's, that have to be used for writing operations.
      * @return the created map. Never null.
      */
-    public HashMap<String, Integer> getLists() {
-        HashMap<String, Integer> listMap = new HashMap<>();
+    public SortedMap<String, Integer> getLists() {
+        SortedMap<String, Integer> listMap = new TreeMap<>();
 
         for (ShoppingList currentListToMap : m_model.getAllShoppingLists()) {
             listMap.put(currentListToMap.Title, currentListToMap.Id);
@@ -207,11 +206,22 @@ public class ShoppingListPresenter {
     }
 
     public void editListEntry(int _listEntryId, float _newValue) {
-        // TODO implement stub
+        if (m_activeList == null || m_activeList.ListEntries.indexOfKey(_listEntryId) < 0) {
+            return;
+        }
+
+        if (_newValue < 0.001f) {
+            deactivateListEntry(_listEntryId);
+        } else {
+            m_activeList.ListEntries.put(_listEntryId, _newValue);
+            m_model.updateShoppingList(m_activeList, m_db);
+        }
     }
 
     public float getValueOfEntry(int _listEntryId) {
-        // TODO implement stub
-        return 0.0f;
+        if (m_activeList == null) {
+            return Float.NaN;
+        }
+        return m_activeList.ListEntries.get(_listEntryId, Float.NaN);
     }
 }

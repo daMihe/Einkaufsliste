@@ -18,9 +18,6 @@
 
 package org.noorganization.shoppinglist.presenter;
 
-/**
- * Created by michi on 21.02.15.
- */
 class Constants {
     static final String DATABASE_NAME = "f02e0843-1773-40df-bd30-cc9921c73537.db";
     static final String SHARED_PREFERENCES_NAME = "276cea13-7254-40e5-b10a-e3f8e52a9f4c";

@@ -28,6 +28,7 @@ import org.noorganization.shoppinglist.model.Product;
 import org.noorganization.shoppinglist.model.ShoppingList;
 
 import java.util.HashMap;
+import java.util.SortedMap;
 
 public class ShoppingListPresenterTest extends AndroidTestCase {
 
@@ -69,7 +70,7 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
 
         m_model.createShoppingList("A shopping list 2", m_modelConnection);
         ShoppingList createdList = m_model.createShoppingList("A shopping list 1", m_modelConnection);
-        m_prefs.edit().putInt(Constants.SP_CURRENT_LIST_ID, createdList.Id).commit();
+        m_prefs.edit().putInt(Constants.SP_CURRENT_LIST_ID, createdList.Id).apply();
         m_presenter = ShoppingListPresenter.resetSingleton(getContext(), SP_NAME, DB_NAME);
 
         assertEquals("A shopping list 1", m_presenter.getCurrentListTitle());
@@ -101,7 +102,7 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
         assertEquals(0, m_presenter.getLists().size());
 
         ShoppingList resultingList = m_model.createShoppingList("List 1", m_modelConnection);
-        HashMap<String, Integer> allLists = m_presenter.getLists();
+        SortedMap<String, Integer> allLists = m_presenter.getLists();
         assertEquals(1, allLists.size());
         assertEquals(resultingList.Id, allLists.get("List 1").intValue());
 
@@ -177,20 +178,28 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
     }
 
     public void testEditListEntry() throws Exception {
-        Product testProduct = m_model.createProduct("Activate Product", 1.0f, ModelManager.INVALID_ID,
+        Product testProduct1 = m_model.createProduct("Activate Product", 1.0f, ModelManager.INVALID_ID,
                 m_modelConnection);
         Product testProduct2 = m_model.createProduct("Activate Product2", 1.0f, ModelManager.INVALID_ID,
                 m_modelConnection);
         ShoppingList testList = m_model.createShoppingList("List 1", m_modelConnection);
-        testList.ListEntries.put(testProduct.Id, 2.0f);
+        testList.ListEntries.put(testProduct1.Id, 2.0f);
         testList.ListEntries.put(testProduct2.Id, 2.0f);
+        m_model.updateShoppingList(testList, m_modelConnection);
         m_presenter.selectList(testList.Id);
 
-        m_presenter.editListEntry(testProduct.Id, 5.0f);
+        m_presenter.editListEntry(testProduct1.Id, 5.0f);
 
         testList = m_model.getShoppingListById(testList.Id);
-        assertEquals(5.0f, testList.ListEntries.get(testProduct.Id, Float.NaN));
-        assertEquals(2.0f, testList.ListEntries.get(testProduct2.Id, Float.NaN));
+        assertEquals(5.0f, testList.ListEntries.get(testProduct1.Id, Float.NaN), 0.001f);
+        assertEquals(2.0f, testList.ListEntries.get(testProduct2.Id, Float.NaN), 0.001f);
+
+        m_presenter.editListEntry(testProduct2.Id, 0.0f);
+
+        testList = m_model.getShoppingListById(testList.Id);
+        assertEquals(5.0f, testList.ListEntries.get(testProduct1.Id, Float.NaN), 0.001f);
+        assertFalse(testList.ListEntries.indexOfKey(testProduct2.Id) >= 0);
+
     }
 
     public void testGetValueOfEntry() throws Exception {
@@ -201,6 +210,7 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
         ShoppingList testList = m_model.createShoppingList("List 1", m_modelConnection);
         testList.ListEntries.put(testProduct1.Id, 2.0f);
         testList.ListEntries.put(testProduct2.Id, 7.0f);
+        m_model.updateShoppingList(testList, m_modelConnection);
         m_presenter.selectList(testList.Id);
 
         assertEquals(2.0f, m_presenter.getValueOfEntry(testProduct1.Id), 0.001f);
