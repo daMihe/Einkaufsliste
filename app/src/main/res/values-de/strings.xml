@@ -23,6 +23,6 @@
     <string name="create_shopping_list">Neue Liste</string>
     <string name="new_list_enter_title">Titel für die neue Liste</string>
     <string name="error_title_empty">Füllen Sie bitte einen Titel ein!</string>
-    <string name="hello_world"></string>
     <string name="title">Titel</string>
+    <string name="confirm_delete_list">Möchten Sie wirklich die Liste und alle Einträge löschen? Die Produkte selbst bleiben erhalten. Die Liste selbst ist dann aber weg.</string>
 </resources>

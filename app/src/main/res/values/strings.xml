@@ -3,11 +3,12 @@
 
     <string name="app_name">ShoppingList</string>
     <string name="title_activity_launch">LaunchActivity</string>
-    <string name="hello_world" translatable="false">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="create_shopping_list">create new list</string>
     <string name="new_list_enter_title">new list title</string>
     <string name="title">title</string>
     <string name="error_title_empty">please enter a title</string>
+    <string name="confirm_delete_list">Really delete the list and all it\'s entries? The products itself are not deleted. This action is NOT reversible.</string>
+    <string name="delete_list">delete this list</string>
 
 </resources>

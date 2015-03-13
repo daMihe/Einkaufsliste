@@ -31,8 +31,6 @@ import org.noorganization.shoppinglist.R;
 import org.noorganization.shoppinglist.presenter.ShoppingListPresenter;
 
 public class CreateListFragment extends DialogFragment {
-    private static final String BK_TITLE    = "title";
-
     @Override
     public Dialog onCreateDialog(Bundle _savedState) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
@@ -76,6 +74,9 @@ public class CreateListFragment extends DialogFragment {
                     } else {
                         ShoppingListPresenter presenter = ShoppingListPresenter.getInstance(getActivity());
                         presenter.createList(choosenTitle);
+
+                        ((MainActivity) getActivity()).updateListDropDown();
+
                         dismiss();
                     }
                 }

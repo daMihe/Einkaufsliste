@@ -60,26 +60,19 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_shoppinglist);
 
         m_listSelector = new Spinner(this);
-        SortedMap<String, Integer> allLists = m_presenter.getLists();
-        m_listSelector.setAdapter(new ListSpinnerAdapter(allLists));
+        m_listSelector.setAdapter(new ListSpinnerAdapter(m_presenter.getLists()));
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(m_listSelector);
 
-        int selectedId = m_presenter.getCurrentListId();
-        for (int currentIndex = 0; currentIndex < m_listSelector.getCount(); currentIndex++) {
-            if (m_listSelector.getItemIdAtPosition(currentIndex) == selectedId) {
-                m_listSelector.setSelection(currentIndex);
-                break;
-            }
-        }
+        updateListDropDown();
 
         m_listSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> _parent, View _view, int _position, long _selectedId) {
                 m_presenter.selectList((int) _selectedId);
-                updateList(true);
+                // TODO refresh listfragments
             }
 
             @Override
@@ -89,8 +82,15 @@ public class MainActivity extends FragmentActivity {
 
     }
 
-    public void updateList(boolean _scrollUp) {
-        // TODO implement
+    public void updateListDropDown() {
+        int selectedId = m_presenter.getCurrentListId();
+        ((ListSpinnerAdapter) m_listSelector.getAdapter()).updateLists(m_presenter.getLists());
+        for (int currentIndex = 0; currentIndex < m_listSelector.getCount(); currentIndex++) {
+            if (m_listSelector.getItemIdAtPosition(currentIndex) == selectedId) {
+                m_listSelector.setSelection(currentIndex);
+                break;
+            }
+        }
     }
 
     @Override
@@ -99,9 +99,12 @@ public class MainActivity extends FragmentActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_shoppinglist, menu);
+    public boolean onCreateOptionsMenu(Menu _menu) {
+        getMenuInflater().inflate(R.menu.menu_shoppinglist, _menu);
+
+        ShoppingListPresenter presenter = ShoppingListPresenter.getInstance(this);
+        _menu.findItem(R.id.action_delete_list).setEnabled(presenter.getLists().size() > 1);
+
         return true;
     }
 
@@ -110,14 +113,15 @@ public class MainActivity extends FragmentActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        FragmentManager fragMan = getFragmentManager();
+
         switch (item.getItemId()) {
             case R.id.action_create_list:
-                FragmentManager fragMan = getFragmentManager();
                 fragMan.beginTransaction().add(new CreateListFragment(), null).commit();
-
+                return true;
+            case R.id.action_delete_list:
+                fragMan.beginTransaction().add(new DeleteListFragment(), null).commit();
                 return true;
         }
 
@@ -163,12 +167,12 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public Object getItem(int _position) {
-            return m_elements.keySet().toArray(new String[0])[_position];
+            return m_elements.keySet().toArray(new String[m_elements.size()])[_position];
         }
 
         @Override
         public long getItemId(int _position) {
-            return m_elements.get(getItem(_position));
+            return m_elements.values().toArray(new Integer[m_elements.size()])[_position];
         }
 
         @Override
