@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -66,7 +67,30 @@ public class MainActivity extends FragmentActivity {
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(m_listSelector);
 
+        int selectedId = m_presenter.getCurrentListId();
+        for (int currentIndex = 0; currentIndex < m_listSelector.getCount(); currentIndex++) {
+            if (m_listSelector.getItemIdAtPosition(currentIndex) == selectedId) {
+                m_listSelector.setSelection(currentIndex);
+                break;
+            }
+        }
 
+        m_listSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> _parent, View _view, int _position, long _selectedId) {
+                m_presenter.selectList((int) _selectedId);
+                updateList(true);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> _parent) {
+            }
+        });
+
+    }
+
+    public void updateList(boolean _scrollUp) {
+        // TODO implement
     }
 
     @Override

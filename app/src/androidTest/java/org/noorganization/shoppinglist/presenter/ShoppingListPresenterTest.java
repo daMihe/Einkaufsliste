@@ -65,6 +65,17 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
         assertFalse(m_presenter.needsToCreateAList());
     }
 
+    public void testGetCurrentListId() throws Exception {
+        assertEquals(ShoppingListPresenter.NO_ID, m_presenter.getCurrentListId());
+
+        m_model.createShoppingList("A shopping list 2", m_modelConnection);
+        ShoppingList createdList = m_model.createShoppingList("A shopping list 1", m_modelConnection);
+        m_prefs.edit().putInt(Constants.SP_CURRENT_LIST_ID, createdList.Id).apply();
+        m_presenter = ShoppingListPresenter.resetSingleton(getContext(), SP_NAME, DB_NAME);
+
+        assertEquals(createdList.Id, m_presenter.getCurrentListId());
+    }
+
     public void testGetCurrentListTitle() throws Exception {
         assertEquals("", m_presenter.getCurrentListTitle());
 

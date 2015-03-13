@@ -23,9 +23,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -33,9 +30,6 @@ import android.widget.Toast;
 import org.noorganization.shoppinglist.R;
 import org.noorganization.shoppinglist.presenter.ShoppingListPresenter;
 
-/**
- * Created by michi on 10.03.15.
- */
 public class CreateListFragment extends DialogFragment {
     private static final String BK_TITLE    = "title";
 
@@ -43,15 +37,11 @@ public class CreateListFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle _savedState) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
 
-        dialogBuilder.setTitle(R.string.create_shopping_list);
-        dialogBuilder.setMessage(R.string.enter_title);
+        dialogBuilder.setTitle(R.string.new_list_enter_title);
 
         EditText titleTextView = new EditText(getActivity());
         titleTextView.setHint(R.string.title);
         titleTextView.setId(R.id.inner_text_view);
-        if (_savedState != null) {
-            titleTextView.setText(_savedState.getCharSequence(BK_TITLE, ""));
-        }
         dialogBuilder.setView(titleTextView);
 
         dialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -92,4 +82,5 @@ public class CreateListFragment extends DialogFragment {
             });
         }
     }
+
 }
