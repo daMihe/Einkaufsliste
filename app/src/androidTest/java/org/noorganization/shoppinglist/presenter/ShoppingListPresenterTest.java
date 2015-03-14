@@ -66,7 +66,7 @@ public class ShoppingListPresenterTest extends AndroidTestCase {
     }
 
     public void testGetCurrentListId() throws Exception {
-        assertEquals(ShoppingListPresenter.NO_ID, m_presenter.getCurrentListId());
+        assertEquals(Constants.NO_ID, m_presenter.getCurrentListId());
 
         m_model.createShoppingList("A shopping list 2", m_modelConnection);
         ShoppingList createdList = m_model.createShoppingList("A shopping list 1", m_modelConnection);

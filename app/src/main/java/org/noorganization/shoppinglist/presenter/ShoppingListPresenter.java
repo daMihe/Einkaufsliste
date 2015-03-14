@@ -33,8 +33,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class ShoppingListPresenter {
-    public static final int NO_ID = ModelManager.INVALID_ID;
-
     private ShoppingList      m_activeList;
     private SharedPreferences m_prefs;
     private ModelManager      m_model;
@@ -229,7 +227,7 @@ public class ShoppingListPresenter {
 
     public int getCurrentListId() {
         if (m_activeList == null) {
-            return NO_ID;
+            return Constants.NO_ID;
         }
         return m_activeList.Id;
     }

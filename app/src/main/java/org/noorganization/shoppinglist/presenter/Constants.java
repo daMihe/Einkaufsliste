@@ -18,9 +18,13 @@
 
 package org.noorganization.shoppinglist.presenter;
 
+import org.noorganization.shoppinglist.model.ModelManager;
+
 class Constants {
+    public static final int NO_ID = ModelManager.INVALID_ID;
     static final String DATABASE_NAME = "f02e0843-1773-40df-bd30-cc9921c73537.db";
     static final String SHARED_PREFERENCES_NAME = "276cea13-7254-40e5-b10a-e3f8e52a9f4c";
 
     static final String SP_CURRENT_LIST_ID = "current_list_id";
+
 }
