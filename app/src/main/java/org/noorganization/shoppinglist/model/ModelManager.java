@@ -405,8 +405,12 @@ public class ModelManager {
         ContentValues updatedProductValues = new ContentValues();
         updatedProductValues.put("title", _productToUpdate.Title);
         updatedProductValues.put("defaultvalue", _productToUpdate.DefaultValue);
-        updatedProductValues.put("unit_id", (_productToUpdate.UnitId == INVALID_ID ? null : _productToUpdate.UnitId));
-        if (_db.update("Products", updatedProductValues, "id = ?", new String[]{ _productToUpdate.Id + "" }) == 0) {
+        if (_productToUpdate.UnitId == INVALID_ID) {
+            updatedProductValues.putNull("unit_id");
+        } else {
+            updatedProductValues.put("unit_id", _productToUpdate.UnitId);
+        }
+        if (_db.update("Products", updatedProductValues, "id=?", new String[]{ _productToUpdate.Id + "" }) == 0) {
             return false;
         }
 
@@ -535,10 +539,6 @@ public class ModelManager {
         }
 
         _db.delete("Products", "id = ?", new String[]{ _productToDelete.Id + "" });
-    }
-
-    public boolean loaded() {
-        return m_loaded;
     }
 
     public int getCountOfShoppingLists() {

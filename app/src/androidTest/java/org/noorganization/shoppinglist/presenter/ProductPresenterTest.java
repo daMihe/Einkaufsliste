@@ -40,7 +40,7 @@ public class ProductPresenterTest extends AndroidTestCase {
         m_model = ModelManager.getInstance();
         m_db = m_model.openAndReadDatabase(getContext(), DB_NAME);
 
-        m_presenter = ProductPresenter.getInstance(getContext(), DB_NAME, false);
+        m_presenter = ProductPresenter.getInstance(getContext(), DB_NAME, true);
     }
 
     public void tearDown() throws Exception {
@@ -86,10 +86,10 @@ public class ProductPresenterTest extends AndroidTestCase {
     }
 
     public void testEditProduct() throws Exception {
-        Product pb1 = m_model.createProduct("Product 1", 5.0f, Constants.NO_ID, m_db);
-        Product pb2 = m_model.createProduct("Product 2", 12.0f, Constants.NO_ID, m_db);
+        Product pb1 = m_model.createProduct("Product 1", 5.0f, ModelManager.INVALID_ID, m_db);
+        Product pb2 = m_model.createProduct("Product 2", 12.0f, ModelManager.INVALID_ID, m_db);
 
-        m_presenter.editProduct(Constants.NO_ID, "", 1.0f, Constants.NO_ID);
+        m_presenter.editProduct(Constants.NO_ID, "", 1.0f, ModelManager.INVALID_ID);
         Product pa1 = m_model.getProductById(pb1.Id);
         Product pa2 = m_model.getProductById(pb2.Id);
         assertEquals("Product 1", pa1.Title);

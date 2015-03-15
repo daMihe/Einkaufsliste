@@ -149,6 +149,12 @@ public class ModelManagerTest extends AndroidTestCase {
         m_currentConnection.close();
         m_currentConnection = modelManager.openAndReadDatabase(getContext(), DB_NAME);
         assertEquals(2, modelManager.m_allProducts.size());
+
+        testProduct = modelManager.getProductById(testProductForId.Id);
+        assertEquals("Product 2", testProduct.Title);
+        assertEquals(testProductForId.Id, testProduct.Id);
+        assertEquals(5.0f, testProduct.DefaultValue, 0.001f);
+        assertEquals(ModelManager.INVALID_ID, testProduct.UnitId);
     }
 
     public void testGetProductById() throws Exception {
@@ -262,6 +268,13 @@ public class ModelManagerTest extends AndroidTestCase {
         m_currentConnection = modelManager.openAndReadDatabase(getContext(), DB_NAME);
         assertNotNull(modelManager.getProductById(1));
         assertEquals("blubbla", modelManager.getProductById(1).Title);
+
+        productOfChange.Id = 1;
+        productOfChange.DefaultValue = 5.0f;
+        productOfChange.UnitId       = ModelManager.INVALID_ID;
+        assertTrue(modelManager.updateProduct(productOfChange, m_currentConnection));
+        assertEquals(5.0f, modelManager.getProductById(1).DefaultValue, 0.001f);
+        assertEquals(ModelManager.INVALID_ID, modelManager.getProductById(1).UnitId);
     }
 
     public void testUpdateShoppingList() throws Exception {

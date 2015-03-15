@@ -20,10 +20,13 @@ package org.noorganization.shoppinglist.presenter;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import org.noorganization.shoppinglist.model.ModelManager;
+import org.noorganization.shoppinglist.model.Product;
 
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class ProductPresenter {
 
@@ -49,18 +52,48 @@ public class ProductPresenter {
     }
 
     public SortedMap<String, Integer> getProducts() {
-        return null;
+        SortedMap<String, Integer> allProducts = new TreeMap<>();
+
+        for (Product currentProduct : m_model.getAllProducts()) {
+            allProducts.put(currentProduct.Title, currentProduct.Id);
+        }
+
+        return allProducts;
     }
 
     public ProductDetails getProductDetails(int _ProductId) {
-        return null;
+        Product neededProduct = m_model.getProductById(_ProductId);
+
+        if (neededProduct == null) {
+            return null;
+        }
+
+        ProductDetails rtn = new ProductDetails();
+        rtn.Title        = neededProduct.Title;
+        rtn.DefaultValue = neededProduct.DefaultValue;
+        rtn.UnitId       = neededProduct.UnitId;
+
+        return rtn;
     }
 
     public void editProduct(int _id, String _title, float _defValue, int _unitId) {
+        Product productToEdit = m_model.getProductById(_id);
+        if (productToEdit == null) {
+            return;
+        }
 
+        productToEdit.Title        = _title;
+        productToEdit.UnitId       = _unitId;
+        productToEdit.DefaultValue = _defValue;
+
+        m_model.updateProduct(productToEdit, m_db);
     }
 
     public void deleteProduct(int _id) {
-
+        Product productToDelete = m_model.getProductById(_id);
+        if (productToDelete == null) {
+            return;
+        }
+        m_model.deleteProduct(productToDelete, m_db);
     }
 }
