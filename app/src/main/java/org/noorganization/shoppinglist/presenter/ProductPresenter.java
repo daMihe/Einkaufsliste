@@ -32,23 +32,35 @@ public class ProductPresenter {
     private ModelManager   m_model;
     private SQLiteDatabase m_db;
 
-    private ProductPresenter(Context _context) {
+    private ProductPresenter(Context _context, String _dbName) {
         m_model = ModelManager.getInstance();
-        m_db = m_model.openAndReadDatabase(_context, Constants.DATABASE_NAME);
+        m_db = m_model.openAndReadDatabase(_context, _dbName);
     }
 
     public static ProductPresenter getInstance(Context _context) {
-        return getInstance(_context, false);
+        return getInstance(_context, Constants.DATABASE_NAME, false);
     }
 
-    static ProductPresenter getInstance(Context _context, boolean _forceNew) {
+    static ProductPresenter getInstance(Context _context, String _dbName, boolean _forceNew) {
         if (m_presenter == null || _forceNew) {
-            m_presenter = new ProductPresenter(_context);
+            m_presenter = new ProductPresenter(_context, _dbName);
         }
         return m_presenter;
     }
 
     public SortedMap<String, Integer> getProducts() {
         return null;
+    }
+
+    public ProductDetails getProductDetails(int _ProductId) {
+        return null;
+    }
+
+    public void editProduct(int _id, String _title, float _defValue, int _unitId) {
+
+    }
+
+    public void deleteProduct(int _id) {
+
     }
 }
