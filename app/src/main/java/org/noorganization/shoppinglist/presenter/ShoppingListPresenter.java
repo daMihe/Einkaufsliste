@@ -41,6 +41,7 @@ public class ShoppingListPresenter {
     private static ShoppingListPresenter s_presenter;
 
     private ShoppingListPresenter(Context _context, String _sharedPrefName, String _dbName) {
+        //m_context = _context;
         m_prefs = _context.getSharedPreferences(_sharedPrefName, Context.MODE_PRIVATE);
         m_model = ModelManager.getInstance();
         m_activeList = null;
@@ -133,12 +134,12 @@ public class ShoppingListPresenter {
         prefEditor.apply();
     }
 
-    public HashMap<String, Integer> getActiveListEntries() {
+    public SortedMap<String, Integer> getActiveListEntries() {
         if (m_activeList == null) {
-            return new HashMap<>();
+            return new TreeMap<>();
         }
 
-        HashMap<String, Integer> activeEntries = new HashMap<>();
+        SortedMap<String, Integer> activeEntries = new TreeMap<>();
 
         for (int currentPosition = 0; currentPosition < m_activeList.ListEntries.size(); currentPosition++) {
             Product currentProduct = m_model.getProductById(m_activeList.ListEntries.keyAt(currentPosition));
@@ -157,11 +158,11 @@ public class ShoppingListPresenter {
         return activeEntries;
     }
 
-    public HashMap<String, Integer> getInactiveListEntries() {
+    public SortedMap<String, Integer> getInactiveListEntries() {
 
-        HashMap<String, Integer> inactiveEntries = new HashMap<>();
+        SortedMap<String, Integer> inactiveEntries = new TreeMap<>();
         for (Product currentProduct : m_model.getAllProducts()) {
-            if (m_activeList == null || m_activeList.ListEntries.indexOfKey(currentProduct.Id) < 0) {
+            if (m_activeList != null && m_activeList.ListEntries.indexOfKey(currentProduct.Id) < 0) {
                 inactiveEntries.put(currentProduct.Title, currentProduct.Id);
             }
         }
@@ -187,6 +188,11 @@ public class ShoppingListPresenter {
         }
     }
 
+    /**
+     * Deletes a List if it's not last and selected. The last list can't be deleted.
+     * @param _listToDelete The list id to delete.
+     * @return Whether deletion was successful.
+     */
     public boolean deleteList(int _listToDelete) {
         if (m_activeList != null && m_activeList.Id == _listToDelete) {
             if (m_model.getCountOfShoppingLists() == 1) {
